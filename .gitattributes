@@ -1,0 +1,9 @@
+*.py !text !filter !merge !diff
+*.txt !text !filter !merge !diff
+*.md !text !filter !merge !diff
+*.tex !text !filter !merge !diff
+*.aux !text !filter !merge !diff
+*.out !text !filter !merge !diff
+*.toc !text !filter !merge !diff
+*.ipynb !text !filter !merge !diff
+*.gitignore !text !filter !merge !diff
