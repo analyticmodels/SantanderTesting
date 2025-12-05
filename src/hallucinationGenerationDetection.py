@@ -2,6 +2,7 @@ import pandas as pd
 from pathlib import Path
 import random
 import json
+import re
 
 # =============================================================================
 # CONFIGURATION - Select your LLM provider
@@ -10,7 +11,7 @@ import json
 LLM_PROVIDER = "ollama"
 
 # Ollama settings
-OLLAMA_MODEL = "gemma3"
+OLLAMA_MODEL = "granite4:latest"
 
 # Anthropic settings
 ANTHROPIC_API_KEY = "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"
@@ -120,7 +121,9 @@ Return ONLY the questions, one per line, no numbering or extra text."""
 
         # Extract questions from response
         generated = response_text.split('\n')
-        generated = [q.strip() for q in generated if q.strip() and not q.strip()[0].isdigit()]
+        # Strip leading numbers, periods, dashes, and whitespace from each question
+        generated = [re.sub(r'^[\d\.\-\)\s]+', '', q).strip() for q in generated]
+        generated = [q for q in generated if q]  # Remove empty strings
 
         hallucination_questions.extend(generated[:questions_per_base])
         print(f"Generated {len(generated[:questions_per_base])} questions from base question {i+1}/{len(sampled_questions)}")
