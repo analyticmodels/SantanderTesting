@@ -17,7 +17,7 @@ OLLAMA_MODEL = "granite4:latest"
 ANTHROPIC_API_KEY = "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"
 ANTHROPIC_MODEL = "claude-sonnet-4-5-20250929"
 
-# Generation settings
+# Generation settingspip insta
 TARGET_COUNT = 50   # Number of hallucination questions to generate
 SAMPLE_SIZE = 10    # Number of base questions to sample from
 
@@ -271,9 +271,9 @@ def run_hallucination_detection(input_file: Path = None, limit: int = None):
     # Determine input file if not specified
     if input_file is None:
         if LLM_PROVIDER == "anthropic":
-            input_file = Path('../data/hallucinationQuestions_anthropic.parquet')
+            input_file = Path('../data/hallucinationQuestions_{ANTHROPIC_MODEL}.parquet')
         else:
-            input_file = Path('../data/hallucinationQuestions_gemma3.parquet')
+            input_file = Path('../data/hallucinationQuestions_{OLLAMA_MODEL}.parquet')
 
     df = pd.read_parquet(input_file, engine='fastparquet')
 
