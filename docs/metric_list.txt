@@ -1,0 +1,20 @@
+ROUGE-1 
+ROUGE-2 
+ROUGE-L
+BLEU
+F1
+Faithfulness
+Completeness
+Facts Covered
+Cosine similarity (semantic similarity)
+MRR / mean reciprocal rank (position of the first relevant chunk)
+Precision @ k (how many of the top-k retrieved chunks are relevant)
+Recall @ k (how many of the relevant chunks are in the top-k)
+Hit @ k (whether at least one relevant chunk is in the top-k)
+Retrieval Recall
+Answer Relevancy
+Accuracy
+Faithfulness/ Hallucination
+Toxicity / safety Filter
+Tone Compliance
+Adversarial Robustness

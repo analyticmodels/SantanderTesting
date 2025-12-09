@@ -3,6 +3,11 @@ from pathlib import Path
 import random
 import json
 import re
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # =============================================================================
 # CONFIGURATION - Select your LLM provider
@@ -11,18 +16,18 @@ import re
 LLM_PROVIDER = "ollama"
 
 # Ollama settings
-OLLAMA_MODEL = "granite4:latest"
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "granite4:latest")
 
 # Anthropic settings
-ANTHROPIC_API_KEY = "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"
-ANTHROPIC_MODEL = "claude-sonnet-4-5-20250929"
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929")
 
-# Generation settingspip insta
+# Generation settings
 TARGET_COUNT = 50   # Number of hallucination questions to generate
 SAMPLE_SIZE = 10    # Number of base questions to sample from
 
 # Lynx detection settings
-LYNX_MODEL = "tensortemplar/patronus-lynx:8b-instruct-q4_k_m"
+LYNX_MODEL = os.getenv("LYNX_MODEL", "tensortemplar/patronus-lynx:8b-instruct-q4_k_m")
 # =============================================================================
 
 # Initialize clients based on provider

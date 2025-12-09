@@ -1,0 +1,104 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb}
+\usepackage[margin=1in]{geometry}
+
+\title{Overlap Metrics: Mathematical Definitions}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{ROUGE-1}
+
+ROUGE-1 measures unigram (single word) overlap between a candidate response $C$ and reference text $R$.
+
+\begin{equation}
+\text{ROUGE-1 Recall} = \frac{|\text{unigrams}(R) \cap \text{unigrams}(C)|}{|\text{unigrams}(R)|}
+\end{equation}
+
+\begin{equation}
+\text{ROUGE-1 Precision} = \frac{|\text{unigrams}(R) \cap \text{unigrams}(C)|}{|\text{unigrams}(C)|}
+\end{equation}
+
+\begin{equation}
+\text{ROUGE-1 F1} = \frac{2 \cdot P \cdot R}{P + R}
+\end{equation}
+
+\section{ROUGE-2}
+
+ROUGE-2 measures bigram (two consecutive words) overlap.
+
+\begin{equation}
+\text{ROUGE-2 Recall} = \frac{|\text{bigrams}(R) \cap \text{bigrams}(C)|}{|\text{bigrams}(R)|}
+\end{equation}
+
+\begin{equation}
+\text{ROUGE-2 Precision} = \frac{|\text{bigrams}(R) \cap \text{bigrams}(C)|}{|\text{bigrams}(C)|}
+\end{equation}
+
+\begin{equation}
+\text{ROUGE-2 F1} = \frac{2 \cdot P \cdot R}{P + R}
+\end{equation}
+
+\section{ROUGE-L}
+
+ROUGE-L uses the Longest Common Subsequence (LCS) to measure similarity, capturing sentence-level structure.
+
+\begin{equation}
+R_{\text{lcs}} = \frac{\text{LCS}(R, C)}{|R|}
+\end{equation}
+
+\begin{equation}
+P_{\text{lcs}} = \frac{\text{LCS}(R, C)}{|C|}
+\end{equation}
+
+\begin{equation}
+\text{ROUGE-L} = F_{\text{lcs}} = \frac{(1 + \beta^2) \cdot R_{\text{lcs}} \cdot P_{\text{lcs}}}{R_{\text{lcs}} + \beta^2 \cdot P_{\text{lcs}}}
+\end{equation}
+
+where $\beta$ controls the relative importance of recall vs.\ precision (typically $\beta = 1.2$).
+
+\section{BLEU}
+
+BLEU (Bilingual Evaluation Understudy) is a precision-based metric with a brevity penalty.
+
+\textbf{Modified n-gram precision:}
+\begin{equation}
+p_n = \frac{\sum_{g \in \text{n-grams}(C)} \min\bigl(\text{count}_C(g), \max_{R_j} \text{count}_{R_j}(g)\bigr)}{\sum_{g \in \text{n-grams}(C)} \text{count}_C(g)}
+\end{equation}
+
+\textbf{Brevity Penalty:}
+\begin{equation}
+\text{BP} = \begin{cases}
+1 & \text{if } |C| > |R| \\
+\exp\left(1 - \frac{|R|}{|C|}\right) & \text{if } |C| \leq |R|
+\end{cases}
+\end{equation}
+
+\textbf{BLEU Score:}
+\begin{equation}
+\text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right)
+\end{equation}
+
+where $w_n = \frac{1}{N}$ (uniform weights) and typically $N = 4$.
+
+\section{F1 Score}
+
+Token-level F1 score measuring the harmonic mean of precision and recall.
+
+\begin{equation}
+\text{Precision} = \frac{|T_C \cap T_R|}{|T_C|}
+\end{equation}
+
+\begin{equation}
+\text{Recall} = \frac{|T_C \cap T_R|}{|T_R|}
+\end{equation}
+
+\begin{equation}
+\text{F1} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
+\end{equation}
+
+where $T_C$ and $T_R$ are the sets of tokens in the candidate and reference texts, respectively.
+
+\end{document}

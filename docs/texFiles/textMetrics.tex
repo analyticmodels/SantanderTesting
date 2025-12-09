@@ -1,0 +1,112 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb}
+\usepackage[margin=1in]{geometry}
+
+\title{Text Metrics: Mathematical Definitions}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Average Sentence Length}
+
+The mean number of words per sentence in a text.
+
+\begin{equation}
+\text{Avg Sentence Length} = \frac{\sum_{i=1}^{n} |s_i|}{n}
+\end{equation}
+
+where $n$ is the number of sentences and $|s_i|$ is the word count of sentence $i$.
+
+\section{Lexical Diversity}
+
+Measures vocabulary richness, typically using Type-Token Ratio (TTR).
+
+\begin{equation}
+\text{Lexical Diversity (TTR)} = \frac{|V|}{N}
+\end{equation}
+
+where $|V|$ is the number of unique words (types) and $N$ is the total word count (tokens). For length-normalized comparison, MSTTR (Mean Segmental TTR) computes TTR over fixed-length segments:
+
+\begin{equation}
+\text{MSTTR} = \frac{1}{k} \sum_{j=1}^{k} \text{TTR}_j
+\end{equation}
+
+\section{Has Contradictions}
+
+Binary indicator for the presence of contradictory statements.
+
+\begin{equation}
+\text{Has Contradictions} = \mathbb{1}\left[\exists\, (c_i, c_j) : \text{entails}(c_i, \neg c_j)\right]
+\end{equation}
+
+where $c_i, c_j$ are claims extracted from the text. Using an NLI model:
+
+\begin{equation}
+\text{Contradiction Score} = \max_{i \neq j} P(\text{contradiction} \mid c_i, c_j)
+\end{equation}
+
+\section{Has Bullets}
+
+Binary indicator for the presence of bullet points or list markers.
+
+\begin{equation}
+\text{Has Bullets} = \mathbb{1}\left[\exists\, \ell \in L : \text{match}(\ell, \mathcal{R}_{\text{bullet}})\right]
+\end{equation}
+
+where $L$ is the set of lines in the text and $\mathcal{R}_{\text{bullet}}$ is a regex pattern matching bullet markers (e.g., \texttt{/\^{ }[\textbackslash s]*[-*\textbackslash d+.]/}).
+
+\section{Starts With List}
+
+Binary indicator for whether the response begins with a list structure.
+
+\begin{equation}
+\text{Starts With List} = \mathbb{1}\left[\text{match}(\ell_1, \mathcal{R}_{\text{list}})\right]
+\end{equation}
+
+where $\ell_1$ is the first non-empty line of the response.
+
+\section{Valid Markdown}
+
+Binary indicator for syntactically correct Markdown formatting.
+
+\begin{equation}
+\text{Valid Markdown} = \mathbb{1}\left[\text{parse}(T) \neq \text{error}\right]
+\end{equation}
+
+where $\text{parse}(\cdot)$ is a Markdown parser. A softer metric counts formatting issues:
+
+\begin{equation}
+\text{Markdown Validity Score} = 1 - \frac{|\text{errors}|}{|\text{elements}|}
+\end{equation}
+
+\section{Word Count (Actual)}
+
+Total number of words in the generated response.
+
+\begin{equation}
+\text{Word Count (Actual)} = |T_{\text{response}}| = \sum_{i=1}^{n} \mathbb{1}[w_i \in \mathcal{W}]
+\end{equation}
+
+where $\mathcal{W}$ is the set of valid word tokens.
+
+\section{Word Count (GT)}
+
+Total number of words in the ground truth reference.
+
+\begin{equation}
+\text{Word Count (GT)} = |T_{\text{reference}}|
+\end{equation}
+
+\section{Word Count Diff (\%)}
+
+Percentage difference between actual and ground truth word counts.
+
+\begin{equation}
+\text{Word Count Diff (\%)} = \frac{|T_{\text{response}}| - |T_{\text{reference}}|}{|T_{\text{reference}}|} \times 100
+\end{equation}
+
+A value of 0 indicates identical length; positive values indicate the response is longer than the reference.
+
+\end{document}

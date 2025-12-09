@@ -1,0 +1,7 @@
+Faithfulness
+Completeness
+Facts Covered
+Accuracy
+Toxicity
+Tone Compliance
+Adversarial Robustness
