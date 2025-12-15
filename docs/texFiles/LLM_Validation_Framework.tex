@@ -1,0 +1,519 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath, amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{LLM Validation Framework}
+\lhead{}
+\rfoot{Page \thepage}
+
+% Colors
+\definecolor{sectioncolor}{RGB}{0,51,102}
+\definecolor{subsectioncolor}{RGB}{51,102,153}
+
+% Section formatting
+\titleformat{\section}
+{\color{sectioncolor}\normalfont\Large\bfseries}
+{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{subsectioncolor}\normalfont\large\bfseries}
+{\thesubsection}{1em}{}
+
+\title{\textbf{LLM Validation Framework}\\[0.5em]\large End-to-End Blackbox Testing from the User Perspective}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+\tableofcontents
+\newpage
+
+%==============================================================================
+\section{What We Measure and Why}
+%==============================================================================
+
+We measure the system \textbf{as a whole} (blackbox testing) from the \textbf{point of view of the user}. This end-to-end approach validates the complete user experience, similar to how the audit team identified issues in VoiceBot by testing from the user's perspective.
+
+\subsection{Complementary to Development Team Testing}
+
+Our validation approach is complementary to what the development team measures:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{0.45\textwidth}p{0.45\textwidth}@{}}
+\toprule
+\textbf{Development Team} & \textbf{Our Team} \\
+\textbf{(Component/Dev Validation)} & \textbf{(E2E/Blackbox Testing)} \\
+\midrule
+Unit tests for individual components & Full system integration testing \\
+Model-specific benchmarks & User-facing quality assessment \\
+Internal API validation & External behavior validation \\
+Performance profiling & Response quality evaluation \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of validation approaches}
+\end{table}
+
+\textbf{We expect some overlap} between component/dev validation and e2e/blackbox testing. This is \textbf{normal and predictable}, and is not a bad thing---it is natural that there will be overlaps. The overlap provides additional confidence when both approaches identify the same issues, and catches different types of problems when they don't.
+
+%==============================================================================
+\section{Six Dimensions of Validation}
+%==============================================================================
+
+%------------------------------------------------------------------------------
+\subsection{Retrieval Validation}
+%------------------------------------------------------------------------------
+
+\subsubsection*{What It Is}
+Retrieval validation measures whether the system successfully retrieves all relevant pieces of knowledge needed to answer a query. Poor retrieval means the LLM cannot provide accurate answers, regardless of its generation capabilities.
+
+\subsubsection*{Primary Metric: Retrieval Recall}
+Measures whether the system successfully retrieves all relevant pieces of knowledge needed to answer a query.
+
+\begin{equation}
+\text{Retrieval Recall} = \frac{|D_{\text{retrieved}} \cap D_{\text{relevant}}|}{|D_{\text{relevant}}|}
+\end{equation}
+
+\textbf{Implementation Notes:} Requires a labeled test set mapping queries to relevant documents. Compare retrieved document IDs against ground truth using exact matching or semantic similarity thresholds.
+
+\subsubsection*{Additional Metrics}
+\begin{itemize}[noitemsep]
+    \item \textbf{Precision@k} --- Proportion of top-$k$ retrieved documents that are relevant
+    \item \textbf{Mean Reciprocal Rank (MRR)} --- Average of reciprocal ranks of the first relevant result
+    \item \textbf{Hit@k} --- Binary indicator for at least one relevant document in top-$k$
+\end{itemize}
+
+%------------------------------------------------------------------------------
+\subsection{Q\&A Validation}
+%------------------------------------------------------------------------------
+
+\subsubsection*{What It Is}
+Q\&A validation measures whether the system provides correct, complete, and relevant answers to user questions. This evaluates the core functionality of the system---its ability to understand questions and generate appropriate responses.
+
+\subsubsection*{Primary Metrics}
+
+\textbf{Context Relevancy} --- Whether the retrieved knowledge matches the user's query intent.
+
+\vspace{0.5em}
+\textbf{Answer Relevancy} --- Whether the generated answer directly addresses the user's question.
+
+\begin{equation}
+\text{Answer Relevancy} = \frac{1}{n} \sum_{i=1}^{n} \cos(\mathbf{e}_q, \mathbf{e}_{q_i'})
+\end{equation}
+
+where $\mathbf{e}_q$ is the query embedding and $\mathbf{e}_{q_i'}$ are embeddings of questions generated from the answer.
+
+\vspace{0.5em}
+\textbf{Accuracy} --- Whether the final answer is factually correct and aligns with business approved response. \textbf{Threshold: $> 0.95$}
+
+\begin{equation}
+\text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}[y_i = \hat{y}_i]
+\end{equation}
+
+\textbf{Implementation Notes:} Context relevancy uses an LLM-as-judge to evaluate each retrieved chunk against the query. Answer relevancy generates synthetic questions from the answer and measures embedding similarity to the original query. Accuracy uses an LLM-as-judge to evaluate semantic equivalence between generated and ground truth answers.
+
+\subsubsection*{Additional Metrics}
+\begin{itemize}[noitemsep]
+    \item \textbf{Completeness} --- Proportion of required information present in response
+    \item \textbf{Facts Covered} --- Proportion of ground truth facts mentioned
+    \item \textbf{ROUGE-L} --- Longest common subsequence overlap with reference
+    \item \textbf{F1 Score} --- Harmonic mean of precision and recall at token level
+\end{itemize}
+
+%------------------------------------------------------------------------------
+\subsection{Tone/Politeness Validation}
+%------------------------------------------------------------------------------
+
+\subsubsection*{What It Is}
+Tone validation ensures the system communicates in an appropriate manner consistent with brand guidelines and user expectations. This includes formality level, empathy, professionalism, and overall communication style.
+
+\subsubsection*{Primary Metric: Tone Compliance}
+Measures whether the response aligns with the expected communication style of the bank (formal, respectful, concise, non-emotional).
+
+\begin{equation}
+\text{Tone Compliance} = P(t = t_{\text{target}} \mid r)
+\end{equation}
+
+where $t_{\text{target}} \in \{\text{formal}, \text{respectful}, \text{concise}, \text{non-emotional}, \ldots\}$
+
+\textbf{Implementation Notes:} Define target tone attributes from brand guidelines and use an LLM-as-judge or fine-tuned classifier to evaluate each attribute. Calculate compliance as the proportion of attributes satisfied.
+
+\subsubsection*{Additional Metrics}
+\begin{itemize}[noitemsep]
+    \item \textbf{Lexical Diversity} --- Vocabulary richness (Type-Token Ratio)
+    \item \textbf{Average Sentence Length} --- Readability indicator
+    \item \textbf{Word Count Comparison} --- Response verbosity vs.\ expected length
+\end{itemize}
+
+%------------------------------------------------------------------------------
+\subsection{Risk/Guardrails Validation}
+%------------------------------------------------------------------------------
+
+\subsubsection*{What It Is}
+Risk validation verifies that the system's safety mechanisms are functioning properly, filtering harmful, offensive, or inappropriate content. This protects users and the organization from reputational and legal risks.
+
+\subsubsection*{Primary Metric: Toxicity/Safety Filter}
+Ensures the response avoids rude, harmful, biased, or offensive content. Checks that the model blocks unsafe behaviors by enforcing policies around PII, abuse, self-harm, compliance, and restricted topics. \textbf{Threshold: 0}
+
+\begin{equation}
+\text{Toxicity Score} = \max_{c \in \mathcal{C}} P(c \mid r)
+\end{equation}
+
+where $\mathcal{C} = \{\text{PII}, \text{abuse}, \text{self-harm}, \text{compliance}, \text{restricted topics}, \ldots\}$
+
+\textbf{Implementation Notes:} Run responses through safety classifiers for each risk category (PII, abuse, self-harm, restricted topics). Flag as unsafe if any category exceeds threshold. Combine regex patterns, NER, and LLM-as-judge for comprehensive detection.
+
+\subsubsection*{Additional Metrics}
+\begin{itemize}[noitemsep]
+    \item \textbf{Safety Rate} --- Proportion of responses that pass safety filters
+\end{itemize}
+
+%------------------------------------------------------------------------------
+\subsection{Hallucination Validation}
+%------------------------------------------------------------------------------
+
+\subsubsection*{What It Is}
+Hallucination validation detects when the system generates information that is not grounded in the provided context or factual knowledge. Hallucinations erode user trust and can lead to serious consequences in high-stakes domains.
+
+\subsubsection*{Primary Metric: Faithfulness/Hallucination}
+Whether the response stays strictly grounded in the retrieved context without adding unsupported facts.
+
+\begin{equation}
+\text{Faithfulness} = \frac{|C_{\text{supported}}|}{|C_{\text{total}}|}
+\end{equation}
+
+Alternatively expressed as \textbf{Hallucination Rate}:
+
+\begin{equation}
+\text{Hallucination Rate} = 1 - \text{Faithfulness}
+\end{equation}
+
+\textbf{Implementation Notes:} Extract factual claims from the response and verify each against the provided context. Use an LLM-as-judge or NLI model to check if the context entails each claim. Faithfulness is the proportion of supported claims.
+
+\subsubsection*{Additional Metrics}
+\begin{itemize}[noitemsep]
+    \item \textbf{Has Contradictions} --- Detection of internally contradictory statements
+    \item \textbf{Facts Covered} --- Verification that stated facts match ground truth
+\end{itemize}
+
+%------------------------------------------------------------------------------
+\subsection{Bad-Actor Attack Validation}
+%------------------------------------------------------------------------------
+
+\subsubsection*{What It Is}
+Bad-actor validation tests the system's resilience against adversarial inputs designed to manipulate, bypass safety measures, or extract unintended behaviors. This includes prompt injection, jailbreaking attempts, and other attack vectors.
+
+\subsubsection*{Primary Metric: Adversarial Robustness}
+Measures how well the system resists and safely handles adversarial inputs such as prompt injection attempts, manipulation, jailbreaks, or malicious user instructions.
+
+\begin{equation}
+\text{Adversarial Robustness} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}\left[f(x_i) = f(x_i + \delta_i)\right]
+\end{equation}
+
+where $\delta_i$ represents adversarial perturbations (prompt injections, manipulation, jailbreaks, malicious instructions).
+
+\textbf{Implementation Notes:} Curate adversarial test cases across attack categories (prompt injection, jailbreaks, data extraction, manipulation). Evaluate if the system maintains safe behavior using pattern matching and LLM-as-judge. Robustness is the proportion of attacks successfully defended.
+
+\subsubsection*{Additional Metrics}
+\begin{itemize}[noitemsep]
+    \item \textbf{Attack Success Rate (ASR)} --- Proportion of attacks that change model behavior
+\end{itemize}
+
+%==============================================================================
+\section{Summary}
+%==============================================================================
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{2.5cm}p{5.5cm}p{3cm}p{2.5cm}@{}}
+\toprule
+\textbf{Dimension} & \textbf{Primary Metric} & \textbf{Focus Area} & \textbf{Threshold} \\
+\midrule
+Retrieval & Retrieval Recall & Finding relevant information & --- \\
+Q\&A & Context Relevancy, Answer Relevancy, Accuracy & Response correctness & Accuracy $> 0.95$ \\
+Tone/Politeness & Tone Compliance & Communication style & --- \\
+Risk/Guardrails & Toxicity/Safety Filter & Content safety & 0 \\
+Hallucination & Faithfulness/Hallucination & Factual grounding & --- \\
+Bad-Actor Attack & Adversarial Robustness & Security resilience & --- \\
+\bottomrule
+\end{tabular}
+\caption{Summary of validation dimensions and primary metrics}
+\end{table}
+
+\newpage
+
+%##############################################################################
+\appendix
+%##############################################################################
+
+%==============================================================================
+\section{Overlap Metrics: Mathematical Definitions}
+%==============================================================================
+
+\subsection{ROUGE-1}
+
+Unigram overlap between generated and reference text.
+
+\begin{equation}
+\text{ROUGE-1 Recall} = \frac{|\text{unigrams}(R) \cap \text{unigrams}(C)|}{|\text{unigrams}(R)|}
+\end{equation}
+
+\begin{equation}
+\text{ROUGE-1 Precision} = \frac{|\text{unigrams}(R) \cap \text{unigrams}(C)|}{|\text{unigrams}(C)|}
+\end{equation}
+
+\begin{equation}
+\text{ROUGE-1 F1} = \frac{2 \cdot P \cdot R}{P + R}
+\end{equation}
+
+\subsection{ROUGE-2}
+
+Bigram (two consecutive words) overlap.
+
+\begin{equation}
+\text{ROUGE-2 Recall} = \frac{|\text{bigrams}(R) \cap \text{bigrams}(C)|}{|\text{bigrams}(R)|}
+\end{equation}
+
+\begin{equation}
+\text{ROUGE-2 Precision} = \frac{|\text{bigrams}(R) \cap \text{bigrams}(C)|}{|\text{bigrams}(C)|}
+\end{equation}
+
+\subsection{ROUGE-L}
+
+Longest Common Subsequence (LCS) based measure capturing sentence-level structure.
+
+\begin{equation}
+R_{\text{lcs}} = \frac{\text{LCS}(R, C)}{|R|}, \quad P_{\text{lcs}} = \frac{\text{LCS}(R, C)}{|C|}
+\end{equation}
+
+\begin{equation}
+\text{ROUGE-L} = F_{\text{lcs}} = \frac{(1 + \beta^2) \cdot R_{\text{lcs}} \cdot P_{\text{lcs}}}{R_{\text{lcs}} + \beta^2 \cdot P_{\text{lcs}}}
+\end{equation}
+
+where $\beta$ controls relative importance of recall vs.\ precision (typically $\beta = 1.2$).
+
+\subsection{BLEU}
+
+Precision-based n-gram overlap with brevity penalty.
+
+\textbf{Modified n-gram precision:}
+\begin{equation}
+p_n = \frac{\sum_{g \in \text{n-grams}(C)} \min(\text{count}_C(g), \max_{R_j} \text{count}_{R_j}(g))}{\sum_{g \in \text{n-grams}(C)} \text{count}_C(g)}
+\end{equation}
+
+\textbf{Brevity Penalty:}
+\begin{equation}
+\text{BP} = \begin{cases} 1 & \text{if } |C| > |R| \\ \exp\left(1 - \frac{|R|}{|C|}\right) & \text{if } |C| \leq |R| \end{cases}
+\end{equation}
+
+\textbf{BLEU Score:}
+\begin{equation}
+\text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right)
+\end{equation}
+
+\subsection{F1 Score}
+
+Token-level harmonic mean of precision and recall.
+
+\begin{equation}
+\text{Precision} = \frac{|T_C \cap T_R|}{|T_C|}, \quad \text{Recall} = \frac{|T_C \cap T_R|}{|T_R|}
+\end{equation}
+
+\begin{equation}
+\text{F1} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
+\end{equation}
+
+%==============================================================================
+\section{Quality Metrics: Mathematical Definitions}
+%==============================================================================
+
+\subsection{Context Relevancy}
+
+Measures whether the retrieved knowledge matches the user's query intent.
+
+\begin{equation}
+\text{Context Relevancy} = \frac{1}{n} \sum_{i=1}^{n} \mathbb{1}\left[\text{relevant}(c_i, q)\right]
+\end{equation}
+
+where $c_i$ is a retrieved context chunk and $q$ is the user query. Alternatively, using semantic similarity:
+
+\begin{equation}
+\text{Context Relevancy} = \frac{1}{n} \sum_{i=1}^{n} \cos(\mathbf{e}_q, \mathbf{e}_{c_i})
+\end{equation}
+
+\subsection{Answer Relevancy}
+
+Measures whether the generated answer directly addresses the user's question.
+
+\begin{equation}
+\text{Answer Relevancy} = \frac{1}{n} \sum_{i=1}^{n} \cos(\mathbf{e}_q, \mathbf{e}_{q_i'})
+\end{equation}
+
+where $\mathbf{e}_q$ is the embedding of the original query and $\mathbf{e}_{q_i'}$ are embeddings of synthetic questions generated from the answer. High similarity indicates the answer addresses the original query intent.
+
+\subsection{Faithfulness}
+
+Proportion of claims grounded in context.
+
+\begin{equation}
+\text{Faithfulness} = \frac{|C_{\text{supported}}|}{|C_{\text{total}}|}
+\end{equation}
+
+A claim $c$ is supported if $P(\text{entailment} \mid \text{context}, c) > \tau$ for threshold $\tau$.
+
+\subsection{Completeness}
+
+Proportion of required information present.
+
+\begin{equation}
+\text{Completeness} = \frac{|I_{\text{covered}}|}{|I_{\text{required}}|}
+\end{equation}
+
+\subsection{Facts Covered}
+
+Proportion of ground truth facts mentioned.
+
+\begin{equation}
+\text{Facts Covered} = \frac{|\mathcal{F}_{\text{response}} \cap \mathcal{F}_{\text{GT}}|}{|\mathcal{F}_{\text{GT}}|}
+\end{equation}
+
+\subsection{Accuracy}
+
+Correctness against ground truth.
+
+\begin{equation}
+\text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}[y_i = \hat{y}_i]
+\end{equation}
+
+For semantic equivalence:
+\begin{equation}
+\text{Semantic Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}\left[\text{sim}(y_i, \hat{y}_i) \geq \tau\right]
+\end{equation}
+
+\subsection{Toxicity}
+
+Presence of harmful content.
+
+\begin{equation}
+\text{Toxicity Score} = \max_{c \in \mathcal{C}} P(c \mid r)
+\end{equation}
+
+where $\mathcal{C} = \{\text{hate}, \text{harassment}, \text{violence}, \text{self-harm}, \ldots\}$
+
+\begin{equation}
+\text{Safety Rate} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}\left[\text{Toxicity Score}_i \leq \theta\right]
+\end{equation}
+
+\subsection{Tone Compliance}
+
+Adherence to specified style.
+
+\begin{equation}
+\text{Tone Compliance} = P(t = t_{\text{target}} \mid r)
+\end{equation}
+
+Using embedding similarity:
+\begin{equation}
+\text{Tone Compliance} = \cos(\mathbf{t}_{\text{target}}, \mathbf{t}_{\text{response}})
+\end{equation}
+
+\subsection{Adversarial Robustness}
+
+Stability under adversarial perturbations.
+
+\begin{equation}
+\text{Adversarial Robustness} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}\left[f(x_i) = f(x_i + \delta_i)\right]
+\end{equation}
+
+\textbf{Attack Success Rate:}
+\begin{equation}
+\text{ASR} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}\left[f(x_i + \delta_i) \neq f(x_i)\right]
+\end{equation}
+
+%==============================================================================
+\section{Retrieval Metrics: Mathematical Definitions}
+%==============================================================================
+
+\subsection{Retrieval Recall}
+
+Measures whether the system successfully retrieves all relevant pieces of knowledge needed to answer a query.
+
+\begin{equation}
+\text{Retrieval Recall} = \frac{|D_{\text{retrieved}} \cap D_{\text{relevant}}|}{|D_{\text{relevant}}|}
+\end{equation}
+
+where $D_{\text{retrieved}}$ is the set of documents returned by the retrieval system and $D_{\text{relevant}}$ is the set of all documents relevant to the query.
+
+\subsection{Mean Reciprocal Rank (MRR)}
+
+\begin{equation}
+\text{MRR} = \frac{1}{|Q|} \sum_{i=1}^{|Q|} \frac{1}{\text{rank}_i}
+\end{equation}
+
+\subsection{Precision@k}
+
+\begin{equation}
+\text{Precision@}k = \frac{|\{d \in D_k : d \text{ is relevant}\}|}{k}
+\end{equation}
+
+\subsection{Recall@k}
+
+\begin{equation}
+\text{Recall@}k = \frac{|\{d \in D_k : d \text{ is relevant}\}|}{|D_{\text{relevant}}|}
+\end{equation}
+
+\subsection{Hit@k}
+
+\begin{equation}
+\text{Hit@}k = \mathbb{1}\left[\exists\, d \in D_k : d \text{ is relevant}\right]
+\end{equation}
+
+%==============================================================================
+\section{Text Metrics: Mathematical Definitions}
+%==============================================================================
+
+\subsection{Average Sentence Length}
+
+\begin{equation}
+\text{Avg Sentence Length} = \frac{\sum_{i=1}^{n} |s_i|}{n}
+\end{equation}
+
+\subsection{Lexical Diversity (Type-Token Ratio)}
+
+\begin{equation}
+\text{TTR} = \frac{|V|}{N}
+\end{equation}
+
+\textbf{Mean Segmental TTR:}
+\begin{equation}
+\text{MSTTR} = \frac{1}{k} \sum_{j=1}^{k} \text{TTR}_j
+\end{equation}
+
+\subsection{Has Contradictions}
+
+\begin{equation}
+\text{Has Contradictions} = \mathbb{1}\left[\exists\, (c_i, c_j) : \text{entails}(c_i, \neg c_j)\right]
+\end{equation}
+
+\begin{equation}
+\text{Contradiction Score} = \max_{i \neq j} P(\text{contradiction} \mid c_i, c_j)
+\end{equation}
+
+\subsection{Word Count Diff (\%)}
+
+\begin{equation}
+\text{Word Count Diff (\%)} = \frac{|T_{\text{response}}| - |T_{\text{reference}}|}{|T_{\text{reference}}|} \times 100
+\end{equation}
+
+\end{document}
