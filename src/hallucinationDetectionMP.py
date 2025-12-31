@@ -27,6 +27,23 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# Suppress verbose HTTP client logs at environment level
+os.environ["HTTPX_LOG_LEVEL"] = "ERROR"
+os.environ["CURL_VERBOSE"] = "0"
+
+# Disable httpx event hooks that spam the terminal
+import warnings
+warnings.filterwarnings("ignore")
+
+# Patch httpx to disable verbose event logging
+try:
+    import httpx
+    # Disable all event hooks in httpx
+    httpx._client.logger = logging.getLogger("httpx")
+    httpx._client.logger.setLevel(logging.CRITICAL)
+except:
+    pass  # httpx not yet imported, will be handled in worker init
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
@@ -36,13 +53,13 @@ _SCRIPT_DIR = Path(__file__).parent.resolve()
 _PROJECT_ROOT = _SCRIPT_DIR.parent
 
 # Input/Output files
-INPUT_FILE = _PROJECT_ROOT / "data" / "hallucinationQuestions_all.parquet"
+INPUT_FILE = _PROJECT_ROOT / "data" / "hallucinationQuestions_all_doc.parquet"
 OUTPUT_FILE = _PROJECT_ROOT / "data" / "hallucinationDetection_MP_results.csv"
 
 # Processing settings
-MAX_WORKERS = 12  # Number of parallel processes
+MAX_WORKERS = 32  # Number of parallel processes
 SAVE_INTERVAL = 50  # Save progress every N completions
-DETECTION_LIMIT = 1000  # Set to integer to limit rows processed (None = all)
+DETECTION_LIMIT = None  # Set to integer to limit rows processed (None = all)
 
 # Detection model settings
 # Options: "lynx", "llama", or "huggingface" (or "hf")
@@ -61,15 +78,28 @@ HF_MAX_NEW_TOKENS = int(os.getenv("HF_MAX_NEW_TOKENS", "512"))
 # =============================================================================
 # LOGGING
 # =============================================================================
+# Configure file logging only - console output controlled separately
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.StreamHandler(),
         logging.FileHandler("hallucinationDetection_MP.log")
     ]
 )
 log = logging.getLogger("hallucination_detector_MP")
+
+# Suppress verbose HTTP logs from HuggingFace and other libraries
+for logger_name in [
+    "httpx", "httpcore", "urllib3", "huggingface_hub",
+    "huggingface_hub.inference._client",
+    "huggingface_hub.inference._generated.types"
+]:
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.CRITICAL)  # Only show critical errors
+    logger.propagate = False  # Don't propagate to parent loggers
+
+# Console logging interval (rows)
+CONSOLE_LOG_INTERVAL = 200
 
 # =============================================================================
 # PROMPT TEMPLATES
@@ -154,17 +184,127 @@ Respond with ONLY this JSON:
 {{"REASONING": "List each claim and whether supported", "HALLUCINATION_DETECTED": true/false, "CONFIDENCE": "HIGH", "SCORE": "PASS"/"FAIL"}}
 """
 
-HF_HALLUCINATION_PROMPT_NO_DOC = """You are a strict hallucination detector. Identify fabricated or suspicious claims in the ANSWER.
+HF_HALLUCINATION_PROMPT_NO_DOC = """You are an expert hallucination detector for AI-generated text. Your task is to determine whether an ANSWER contains hallucinations when evaluated strictly against a REFERENCE DOCUMENT.
 
-QUESTION: {question}
+You must prioritize recall: it is preferable to flag a possible hallucination than to miss one.
 
-ANSWER:
+---
+
+## Evaluation Mode
+REFERENCE-BOUND = true
+
+When REFERENCE-BOUND is true:
+- Treat the REFERENCE DOCUMENT as the sole authoritative source of truth.
+- Even correct general knowledge must be marked UNSUPPORTED unless it is explicitly stated in the document.
+- Do NOT rely on background knowledge, training data, or assumptions not grounded in the document.
+
+---
+
+## Definition of Hallucination
+A hallucination occurs when the ANSWER contains one or more claims that are:
+
+1. **Fabricated**: Information not present in the reference document
+2. **Contradictory**: Information that conflicts with the reference document
+3. **Unsupported**: Specific factual claims (names, numbers, dates, causal assertions) not verifiable from the document
+4. **Confabulated**: Plausible-sounding details that introduce invented specifics
+
+---
+
+## What is NOT a Hallucination (Strictly Limited)
+- Direct quotations or faithful paraphrases of the document
+- Reasonable inferences that are *clearly and explicitly implied* by the document
+- Hedged or uncertain language ("may", "could", "possibly") **only if** it does not introduce new facts
+- Entities or facts explicitly mentioned in the QUESTION (but not new attributes about them)
+
+---
+
+## Hallucination Decision Rule (High Recall)
+A hallucination is detected if ANY of the following are true:
+
+- At least one claim is CONTRADICTED by the document
+- One or more UNSUPPORTED claims introduce specific factual details
+- The answer relies on general knowledge not grounded in the document
+- There is ambiguity and it is unclear whether a claim is supported
+
+When in doubt, choose the more conservative option and flag a hallucination.
+
+---
+
+## Your Task
+Analyze the ANSWER by decomposing it into atomic claims and evaluating each claim strictly against the REFERENCE DOCUMENT.
+
+---
+
+QUESTION:
+{question}
+
+---
+
+REFERENCE DOCUMENT:
+{document}
+
+---
+
+ANSWER TO EVALUATE:
 {answer}
 
-Red flags: specific percentages, made-up dates, named sources, precise policy details.
+---
 
-Respond with ONLY this JSON:
-{{"REASONING": "List suspicious claims", "SUSPICIOUS_CLAIMS": [], "HALLUCINATION_DETECTED": true/false, "CONFIDENCE": "HIGH", "SCORE": "PASS"/"FAIL"}}
+## Evaluation Instructions
+1. Identify each distinct factual or inferential claim in the ANSWER.
+2. For each claim, determine:
+   - **Type**:
+     - FACTUAL (verifiable fact, number, name, date, causal claim)
+     - INFERENTIAL (logical conclusion drawn from the document)
+     - GENERAL_KNOWLEDGE (background information not document-specific)
+     - OPINION (value judgment or recommendation)
+   - **Status**:
+     - SUPPORTED: Explicitly stated in the document (quote required)
+     - UNSUPPORTED: Not present or not verifiable in the document
+     - CONTRADICTED: Conflicts with the document
+   - **Materiality**:
+     - true if the claim materially affects correctness or meaning
+     - false if the claim is minor or peripheral
+3. For SUPPORTED claims, include the exact quote from the document that supports the claim.
+4. If no explicit quote exists, the claim MUST be marked UNSUPPORTED.
+5. Pay particular attention to:
+   - Numbers, dates, names, and causal relationships
+   - Added specificity not present in the document
+   - Plausible but invented explanations
+
+---
+
+## Self-Check (Mandatory)
+Before finalizing your answer, re-evaluate your analysis:
+- Did you assume any facts not explicitly stated?
+- Did you allow general knowledge without document support?
+- Would a strict external auditor disagree with your classification?
+
+If so, revise your evaluation conservatively.
+
+---
+
+## Output Format
+Respond with valid JSON only. Do NOT include any explanatory text outside the JSON.
+
+{
+  "REASONING": [
+    {
+      "claim": "<atomic claim>",
+      "type": "FACTUAL | INFERENTIAL | GENERAL_KNOWLEDGE | OPINION",
+      "status": "SUPPORTED | UNSUPPORTED | CONTRADICTED",
+      "material": true | false,
+      "evidence": "<exact quote from document or null>",
+      "explanation": "<brief justification>"
+    }
+  ],
+  "HALLUCINATION_DETECTED": true | false,
+  "CONFIDENCE": {
+    "level": "HIGH | MEDIUM | LOW",
+    "rationale": "<brief explanation>"
+  },
+  "SCORE": "PASS | FAIL"
+}
 """
 
 # =============================================================================
@@ -183,6 +323,30 @@ def init_worker(detection_model: str, hf_token: str = None):
     """
     global _worker_ollama_client, _worker_hf_client, _worker_detection_model
 
+    # Suppress verbose logging in worker processes
+    import logging
+    import os
+    import sys
+    os.environ["HTTPX_LOG_LEVEL"] = "ERROR"
+
+    for logger_name in ["httpx", "httpcore", "urllib3", "huggingface_hub"]:
+        logging.getLogger(logger_name).setLevel(logging.CRITICAL)
+        logging.getLogger(logger_name).propagate = False
+        logging.getLogger(logger_name).disabled = True
+
+    # Monkey-patch httpx's event logger to completely silence it
+    try:
+        import httpx
+        # Replace the logger with a null logger
+        httpx._client.logger = logging.getLogger("null")
+        httpx._client.logger.disabled = True
+        # Also disable httpcore's trace logging
+        import httpcore
+        httpcore._trace.logger = logging.getLogger("null")
+        httpcore._trace.logger.disabled = True
+    except:
+        pass
+
     _worker_detection_model = detection_model
 
     if detection_model in ("lynx", "llama"):
@@ -191,6 +355,8 @@ def init_worker(detection_model: str, hf_token: str = None):
         log.debug(f"Worker initialized with Ollama for {detection_model}")
     elif detection_model in ("huggingface", "hf"):
         from huggingface_hub import InferenceClient
+
+        # Create InferenceClient
         _worker_hf_client = InferenceClient(
             model=HF_DETECTION_MODEL,
             token=hf_token
@@ -345,31 +511,65 @@ def _detect_with_huggingface(idx: int, question: str, answer: str, document: str
     """Detect hallucinations using HuggingFace Inference API."""
     global _worker_hf_client
 
-    # Select prompt
-    if document:
-        prompt = HF_HALLUCINATION_PROMPT.format(
-            question=question, document=document, answer=answer
-        )
-    else:
-        prompt = HF_HALLUCINATION_PROMPT_NO_DOC.format(
-            question=question, answer=answer
-        )
+    # Check if client is initialized
+    if _worker_hf_client is None:
+        log.error(f"Row {idx}: HuggingFace client not initialized in worker process")
+        return (idx, "ERROR", "LOW", "HF client not initialized", "[]", None, "")
 
-    # Call HuggingFace API
-    messages = [{"role": "user", "content": prompt}]
+    try:
+        # Select prompt
+        if document:
+            prompt = HF_HALLUCINATION_PROMPT.format(
+                question=question, document=document, answer=answer
+            )
+        else:
+            prompt = HF_HALLUCINATION_PROMPT_NO_DOC.format(
+                question=question, answer=answer
+            )
 
-    response = _worker_hf_client.chat_completion(
-        messages=messages,
-        max_tokens=HF_MAX_NEW_TOKENS,
-        temperature=0.1,
-        top_p=0.95,
-    )
+        # Call HuggingFace API - suppress verbose output to terminal
+        messages = [{"role": "user", "content": prompt}]
 
-    if response and response.choices:
-        raw_response = response.choices[0].message.content.strip()
-    else:
-        return (idx, "ERROR", "LOW", "Empty response from HuggingFace",
-               "[]", None, "")
+        # Suppress stdout/stderr at file descriptor level (httpx writes directly to FD)
+        import os
+        import sys
+
+        # Save original file descriptors
+        stdout_fd = sys.stdout.fileno()
+        stderr_fd = sys.stderr.fileno()
+        saved_stdout = os.dup(stdout_fd)
+        saved_stderr = os.dup(stderr_fd)
+
+        try:
+            # Redirect to /dev/null
+            devnull = os.open(os.devnull, os.O_WRONLY)
+            os.dup2(devnull, stdout_fd)
+            os.dup2(devnull, stderr_fd)
+            os.close(devnull)
+
+            # Make the API call with suppressed output
+            response = _worker_hf_client.chat_completion(
+                messages=messages,
+                max_tokens=HF_MAX_NEW_TOKENS,
+                temperature=0.1,
+                top_p=0.95,
+            )
+        finally:
+            # Restore original file descriptors
+            os.dup2(saved_stdout, stdout_fd)
+            os.dup2(saved_stderr, stderr_fd)
+            os.close(saved_stdout)
+            os.close(saved_stderr)
+
+        if response and response.choices:
+            raw_response = response.choices[0].message.content.strip()
+        else:
+            log.error(f"Row {idx}: Empty response from HuggingFace API")
+            return (idx, "ERROR", "LOW", "Empty response from HuggingFace",
+                   "[]", None, "")
+    except Exception as e:
+        log.error(f"Row {idx}: HuggingFace API call failed: {type(e).__name__}: {str(e)}")
+        return (idx, "ERROR", "LOW", f"API error: {str(e)}", "[]", None, str(e))
 
     # Parse response
     parsed = parse_json_response(raw_response)
@@ -528,6 +728,10 @@ def main():
             }
 
             processed_count = 0
+            pass_count = 0
+            fail_count = 0
+            error_count = 0
+
             for future in as_completed(futures):
                 idx = futures[future]
                 try:
@@ -544,12 +748,37 @@ def main():
                     status = "HALLUCINATION" if hallucination_detected else "FAITHFUL"
                     log.info(f"Row {i}: {score} ({confidence}) - {status}")
 
+                    # Track counts for summary
+                    if score == 'PASS':
+                        pass_count += 1
+                    elif score == 'FAIL':
+                        fail_count += 1
+                    elif score == 'ERROR':
+                        error_count += 1
+
                 except Exception as e:
                     log.error(f"Error processing row {idx}: {e}")
                     df.at[idx, 'score'] = "ERROR"
                     df.at[idx, 'reasoning'] = f"Processing error: {e}"
+                    error_count += 1
 
                 processed_count += 1
+
+                # Console summary every CONSOLE_LOG_INTERVAL rows
+                if processed_count % CONSOLE_LOG_INTERVAL == 0:
+                    elapsed = time.time() - start_time
+                    rate = processed_count / (elapsed / 60)
+                    print(f"\n{'='*60}")
+                    print(f"Progress Update: {processed_count}/{len(work_items)} rows processed")
+                    print(f"{'='*60}")
+                    print(f"  PASS (faithful): {pass_count}")
+                    print(f"  FAIL (hallucination): {fail_count}")
+                    print(f"  ERROR: {error_count}")
+                    print(f"  Processing rate: {rate:.1f} rows/min")
+                    print(f"  Elapsed time: {elapsed/60:.1f} min")
+                    print(f"{'='*60}\n")
+
+                # Save progress at regular intervals
                 if processed_count % SAVE_INTERVAL == 0:
                     persist()
                     elapsed = time.time() - start_time

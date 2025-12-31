@@ -1,0 +1,10 @@
+# Core dependencies for SantanderTesting project
+pandas
+requests
+python-docx
+python-dotenv
+tqdm
+
+# AI/ML dependencies
+deepeval
+ibm-watsonx-ai
