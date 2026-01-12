@@ -1,0 +1,9 @@
+Avg Sentence Length
+Lexical Diversity
+Has Contradictions
+Has Bullets
+Starts With List
+Valid Markdown
+Word Count (Actual)
+Word Count (GT)
+Word Count Diff (%)

@@ -1,0 +1,57 @@
+2026-01-08 11:11:27,704 [INFO] ================================================================================
+2026-01-08 11:11:27,704 [INFO] STEP 1: Loading reference documentation
+2026-01-08 11:11:27,705 [INFO] ================================================================================
+2026-01-08 11:11:27,705 [INFO] Loading documentation from: data/Openbank_extracted_text.txt
+2026-01-08 11:11:27,706 [INFO] Documentation loaded successfully:
+2026-01-08 11:11:27,706 [INFO]   - Size: 4,816 characters
+2026-01-08 11:11:27,706 [INFO]   - Estimated tokens: ~1,204
+2026-01-08 11:11:27,707 [INFO]   - Context usage: ~0.9% of Llama-3.3-70B limit
+2026-01-08 11:11:27,707 [INFO]   - Status: Within limits, using full document
+2026-01-08 11:11:27,708 [INFO] Documentation validation passed - found 4 security keywords
+2026-01-08 11:11:27,708 [INFO] 
+================================================================================
+2026-01-08 11:11:27,708 [INFO] STEP 2: Loading input dataset
+2026-01-08 11:11:27,708 [INFO] ================================================================================
+2026-01-08 11:11:27,836 [INFO] Successfully loaded 13852 rows from data/hallucinationQuestions_responses_all.csv
+2026-01-08 11:11:27,838 [INFO] 
+================================================================================
+2026-01-08 11:11:27,838 [INFO] STEP 3: Identifying answers to evaluate for hallucinations
+2026-01-08 11:11:27,839 [INFO] ================================================================================
+2026-01-08 11:11:27,844 [INFO] Evaluating all 13852 rows for hallucinations
+2026-01-08 11:11:27,844 [INFO] 
+Resuming from existing output: data/hallucination_detection_results.csv
+2026-01-08 11:11:28,035 [INFO] Successfully loaded previous progress
+2026-01-08 11:11:28,040 [INFO] 
+Progress Status:
+2026-01-08 11:11:28,040 [INFO]   Total Answers: 13852
+2026-01-08 11:11:28,040 [INFO]   Completed: 540 (3.9%)
+2026-01-08 11:11:28,041 [INFO]   Pending: 13312 (96.1%)
+2026-01-09 08:18:36,950 [INFO] ================================================================================
+2026-01-09 08:18:36,950 [INFO] STEP 1: Loading reference documentation
+2026-01-09 08:18:36,951 [INFO] ================================================================================
+2026-01-09 08:18:36,951 [INFO] Loading documentation from: data/Openbank_extracted_text.txt
+2026-01-09 08:18:36,952 [INFO] Documentation loaded successfully:
+2026-01-09 08:18:36,952 [INFO]   - Size: 11,927 characters
+2026-01-09 08:18:36,952 [INFO]   - Estimated tokens: ~2,981
+2026-01-09 08:18:36,953 [INFO]   - Context usage: ~2.3% of Llama-3.3-70B limit
+2026-01-09 08:18:36,953 [INFO]   - Status: Within limits, using full document
+2026-01-09 08:18:36,953 [INFO] Documentation validation passed - found 5 security keywords
+2026-01-09 08:18:36,953 [INFO] 
+================================================================================
+2026-01-09 08:18:36,954 [INFO] STEP 2: Loading input dataset
+2026-01-09 08:18:36,954 [INFO] ================================================================================
+2026-01-09 08:18:37,129 [INFO] Successfully loaded 13852 rows from data/hallucinationQuestions_responses_all.csv
+2026-01-09 08:18:37,131 [INFO] 
+================================================================================
+2026-01-09 08:18:37,132 [INFO] STEP 3: Identifying answers to evaluate for hallucinations
+2026-01-09 08:18:37,132 [INFO] ================================================================================
+2026-01-09 08:18:37,137 [INFO] Evaluating all 13852 rows for hallucinations
+2026-01-09 08:18:37,137 [INFO] 
+Resuming from existing output: data/hallucination_detection_results.csv
+2026-01-09 08:18:37,204 [INFO] Successfully loaded previous progress
+2026-01-09 08:18:37,209 [INFO] 
+Progress Status:
+2026-01-09 08:18:37,209 [INFO]   Total Answers: 13852
+2026-01-09 08:18:37,210 [INFO]   Completed: 655 (4.7%)
+2026-01-09 08:18:37,210 [INFO]   Pending: 13197 (95.3%)
+2026-01-09 08:18:48,294 [INFO] Evaluation cancelled by user

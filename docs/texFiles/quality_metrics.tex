@@ -1,0 +1,124 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb}
+\usepackage[margin=1in]{geometry}
+
+\title{Quality Metrics: Mathematical Definitions}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Faithfulness}
+
+Measures whether claims in the response are grounded in the provided context.
+
+\begin{equation}
+\text{Faithfulness} = \frac{|C_{\text{supported}}|}{|C_{\text{total}}|}
+\end{equation}
+
+where $C_{\text{total}}$ is the set of all claims extracted from the response and $C_{\text{supported}} \subseteq C_{\text{total}}$ is the subset of claims that are entailed by the context. A claim $c$ is supported if:
+
+\begin{equation}
+P(\text{entailment} \mid \text{context}, c) > \tau
+\end{equation}
+
+for threshold $\tau$.
+
+\section{Completeness}
+
+Measures how much of the required information is present in the response.
+
+\begin{equation}
+\text{Completeness} = \frac{|I_{\text{covered}}|}{|I_{\text{required}}|}
+\end{equation}
+
+where $I_{\text{required}}$ is the set of information elements that should be addressed (derived from the query or ground truth) and $I_{\text{covered}} \subseteq I_{\text{required}}$ is the subset present in the response.
+
+\section{Facts Covered}
+
+Proportion of ground truth facts mentioned in the response.
+
+\begin{equation}
+\text{Facts Covered} = \frac{|\mathcal{F}_{\text{response}} \cap \mathcal{F}_{\text{GT}}|}{|\mathcal{F}_{\text{GT}}|}
+\end{equation}
+
+where $\mathcal{F}_{\text{GT}}$ is the set of facts in the ground truth and $\mathcal{F}_{\text{response}}$ is the set of facts in the generated response. Fact matching can use exact match or semantic similarity:
+
+\begin{equation}
+\text{match}(f_r, f_g) = \mathbb{1}\left[\cos(\mathbf{e}_{f_r}, \mathbf{e}_{f_g}) > \tau\right]
+\end{equation}
+
+\section{Accuracy}
+
+Measures correctness of the response against ground truth.
+
+\begin{equation}
+\text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}[y_i = \hat{y}_i]
+\end{equation}
+
+where $y_i$ is the ground truth answer, $\hat{y}_i$ is the model's response, and $\mathbb{1}[\cdot]$ is the indicator function. For semantic equivalence:
+
+\begin{equation}
+\text{Semantic Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}\left[\text{sim}(y_i, \hat{y}_i) \geq \tau\right]
+\end{equation}
+
+\section{Toxicity}
+
+Measures the presence of harmful, offensive, or inappropriate content.
+
+\begin{equation}
+\text{Toxicity Score} = \max_{c \in \mathcal{C}} P(c \mid r)
+\end{equation}
+
+where $r$ is the response and $\mathcal{C} = \{\text{hate}, \text{harassment}, \text{violence}, \text{self-harm}, \ldots\}$ is the set of toxic categories. A response is flagged as toxic when:
+
+\begin{equation}
+\text{Toxic} = \mathbb{1}\left[\text{Toxicity Score} > \theta\right]
+\end{equation}
+
+The safety rate across a dataset is:
+
+\begin{equation}
+\text{Safety Rate} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}\left[\text{Toxicity Score}_i \leq \theta\right]
+\end{equation}
+
+\section{Tone Compliance}
+
+Measures adherence to a specified tone or style guideline.
+
+\begin{equation}
+\text{Tone Compliance} = P(t = t_{\text{target}} \mid r)
+\end{equation}
+
+where $t_{\text{target}} \in \{\text{formal}, \text{casual}, \text{empathetic}, \text{professional}, \ldots\}$ is the desired tone. Using embedding similarity:
+
+\begin{equation}
+\text{Tone Compliance} = \cos(\mathbf{t}_{\text{target}}, \mathbf{t}_{\text{response}})
+\end{equation}
+
+where $\mathbf{t}_{\text{target}}$ is the embedding of tone exemplars and $\mathbf{t}_{\text{response}}$ is the style embedding of the response.
+
+\section{Adversarial Robustness}
+
+Measures model stability under adversarial perturbations.
+
+\begin{equation}
+\text{Adversarial Robustness} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}\left[f(x_i) = f(x_i + \delta_i)\right]
+\end{equation}
+
+where $x_i$ is the original input, $\delta_i$ is an adversarial perturbation (e.g., typos, synonym substitution, prompt injection), and $f(\cdot)$ is the model's output.
+
+For continuous outputs, robustness can be measured as:
+
+\begin{equation}
+\text{Robustness} = 1 - \frac{1}{N} \sum_{i=1}^{N} \frac{\|f(x_i) - f(x_i + \delta_i)\|}{\|\delta_i\|}
+\end{equation}
+
+The attack success rate (inverse of robustness) is:
+
+\begin{equation}
+\text{ASR} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}\left[f(x_i + \delta_i) \neq f(x_i)\right]
+\end{equation}
+
+\end{document}

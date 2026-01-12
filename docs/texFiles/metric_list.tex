@@ -1,0 +1,224 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb}
+\usepackage[margin=1in]{geometry}
+
+\title{LLM Evaluation Metrics: Mathematical Definitions}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Overlap Metrics}
+
+\subsection{ROUGE-1}
+
+Unigram overlap between generated and reference text.
+
+\begin{equation}
+\text{ROUGE-1} = \frac{|\text{unigrams}(R) \cap \text{unigrams}(C)|}{|\text{unigrams}(R)|}
+\end{equation}
+
+where $R$ is the reference and $C$ is the candidate response.
+
+\subsection{ROUGE-2}
+
+Bigram overlap between generated and reference text.
+
+\begin{equation}
+\text{ROUGE-2} = \frac{|\text{bigrams}(R) \cap \text{bigrams}(C)|}{|\text{bigrams}(R)|}
+\end{equation}
+
+\subsection{ROUGE-L}
+
+Longest Common Subsequence (LCS) based measure.
+
+\begin{equation}
+R_{\text{lcs}} = \frac{\text{LCS}(R, C)}{|R|}, \quad P_{\text{lcs}} = \frac{\text{LCS}(R, C)}{|C|}
+\end{equation}
+
+\begin{equation}
+\text{ROUGE-L} = F_{\text{lcs}} = \frac{(1 + \beta^2) R_{\text{lcs}} P_{\text{lcs}}}{R_{\text{lcs}} + \beta^2 P_{\text{lcs}}}
+\end{equation}
+
+where $\beta$ is typically set to favor recall.
+
+\subsection{BLEU}
+
+Precision-based n-gram overlap with brevity penalty.
+
+\begin{equation}
+p_n = \frac{\sum_{g \in \text{n-grams}(C)} \min(\text{count}_C(g), \text{count}_R(g))}{\sum_{g \in \text{n-grams}(C)} \text{count}_C(g)}
+\end{equation}
+
+\begin{equation}
+\text{BP} = \begin{cases} 1 & \text{if } |C| > |R| \\ e^{1 - |R|/|C|} & \text{if } |C| \leq |R| \end{cases}
+\end{equation}
+
+\begin{equation}
+\text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right)
+\end{equation}
+
+\subsection{F1 Score}
+
+Harmonic mean of precision and recall at the token level.
+
+\begin{equation}
+P = \frac{|C \cap R|}{|C|}, \quad \text{Recall} = \frac{|C \cap R|}{|R|}
+\end{equation}
+
+\begin{equation}
+\text{F1} = \frac{2 \cdot P \cdot \text{Recall}}{P + \text{Recall}}
+\end{equation}
+
+\section{Quality Metrics}
+
+\subsection{Faithfulness}
+
+Proportion of claims in the response grounded in the context.
+
+\begin{equation}
+\text{Faithfulness} = \frac{|C_{\text{supported}}|}{|C_{\text{total}}|}
+\end{equation}
+
+where $C_{\text{total}}$ is all claims in the response and $C_{\text{supported}}$ are those entailed by the context.
+
+\subsection{Completeness}
+
+Proportion of required information present in the response.
+
+\begin{equation}
+\text{Completeness} = \frac{|I_{\text{covered}}|}{|I_{\text{required}}|}
+\end{equation}
+
+where $I_{\text{required}}$ is the set of information elements expected and $I_{\text{covered}}$ are those present.
+
+\subsection{Facts Covered}
+
+Number or proportion of ground truth facts mentioned in the response.
+
+\begin{equation}
+\text{Facts Covered} = \frac{|\mathcal{F}_{\text{response}} \cap \mathcal{F}_{\text{GT}}|}{|\mathcal{F}_{\text{GT}}|}
+\end{equation}
+
+where $\mathcal{F}_{\text{GT}}$ is the set of ground truth facts.
+
+\section{Retrieval Metrics}
+
+\subsection{Cosine Similarity (Semantic Similarity)}
+
+Measures semantic closeness between embedding vectors.
+
+\begin{equation}
+\text{Cosine Similarity} = \cos(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\| \|\mathbf{v}\|}
+\end{equation}
+
+where $\mathbf{u}, \mathbf{v}$ are embedding vectors of two texts.
+
+\subsection{Mean Reciprocal Rank (MRR)}
+
+Average of reciprocal ranks of the first relevant result.
+
+\begin{equation}
+\text{MRR} = \frac{1}{|Q|} \sum_{i=1}^{|Q|} \frac{1}{\text{rank}_i}
+\end{equation}
+
+where $\text{rank}_i$ is the position of the first relevant document for query $i$.
+
+\subsection{Precision@k}
+
+Proportion of top-$k$ retrieved documents that are relevant.
+
+\begin{equation}
+\text{Precision@}k = \frac{|\{d \in D_k : d \text{ is relevant}\}|}{k}
+\end{equation}
+
+where $D_k$ is the set of top-$k$ retrieved documents.
+
+\subsection{Recall@k}
+
+Proportion of relevant documents retrieved in top-$k$.
+
+\begin{equation}
+\text{Recall@}k = \frac{|\{d \in D_k : d \text{ is relevant}\}|}{|D_{\text{relevant}}|}
+\end{equation}
+
+\subsection{Hit@k}
+
+Binary indicator for at least one relevant document in top-$k$.
+
+\begin{equation}
+\text{Hit@}k = \mathbb{1}\left[\exists\, d \in D_k : d \text{ is relevant}\right]
+\end{equation}
+
+\subsection{Retrieval Recall}
+
+Overall recall of the retrieval system.
+
+\begin{equation}
+\text{Retrieval Recall} = \frac{|D_{\text{retrieved}} \cap D_{\text{relevant}}|}{|D_{\text{relevant}}|}
+\end{equation}
+
+\section{Response Quality Metrics}
+
+\subsection{Answer Relevancy}
+
+How well the answer addresses the query.
+
+\begin{equation}
+\text{Answer Relevancy} = \frac{1}{n} \sum_{i=1}^{n} \cos(\mathbf{e}_q, \mathbf{e}_{q_i'})
+\end{equation}
+
+where $\mathbf{e}_q$ is the query embedding and $\mathbf{e}_{q_i'}$ are embeddings of questions generated from the answer.
+
+\subsection{Accuracy}
+
+Correctness of the response against ground truth.
+
+\begin{equation}
+\text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}[y_i = \hat{y}_i]
+\end{equation}
+
+\subsection{Hallucination Rate}
+
+Proportion of claims not supported by the context.
+
+\begin{equation}
+\text{Hallucination Rate} = 1 - \text{Faithfulness} = \frac{|C_{\text{total}} \setminus C_{\text{supported}}|}{|C_{\text{total}}|}
+\end{equation}
+
+\subsection{Toxicity / Safety Filter}
+
+Probability the response contains harmful content.
+
+\begin{equation}
+\text{Toxicity Score} = \max_{c \in \mathcal{C}} P(c \mid r)
+\end{equation}
+
+where $\mathcal{C}$ is the set of toxic categories. The safety filter triggers when:
+
+\begin{equation}
+\text{Flag} = \mathbb{1}\left[\text{Toxicity Score} > \theta\right]
+\end{equation}
+
+\subsection{Tone Compliance}
+
+Adherence to a specified tone or style.
+
+\begin{equation}
+\text{Tone Compliance} = P(t = t_{\text{target}} \mid r)
+\end{equation}
+
+where $t_{\text{target}}$ is the desired tone category.
+
+\subsection{Adversarial Robustness}
+
+Stability of outputs under adversarial perturbations.
+
+\begin{equation}
+\text{Adversarial Robustness} = \frac{1}{N} \sum_{i=1}^{N} \mathbb{1}[f(x_i) = f(x_i + \delta_i)]
+\end{equation}
+
+where $\delta_i$ is an adversarial perturbation to input $x_i$.
+
+\end{document}

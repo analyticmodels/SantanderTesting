@@ -1,0 +1,573 @@
+2026-01-08 11:08:27,943 [INFO] ================================================================================
+2026-01-08 11:08:27,944 [INFO] STEP 1: Loading reference documentation
+2026-01-08 11:08:27,944 [INFO] ================================================================================
+2026-01-08 11:08:27,944 [INFO] Loading documentation from: data/Openbank_extracted_text.txt
+2026-01-08 11:08:27,945 [INFO] Documentation loaded successfully:
+2026-01-08 11:08:27,945 [INFO]   - Size: 4,816 characters
+2026-01-08 11:08:27,946 [INFO]   - Estimated tokens: ~1,204
+2026-01-08 11:08:27,946 [INFO]   - Context usage: ~0.9% of Llama-3.3-70B limit
+2026-01-08 11:08:27,947 [INFO]   - Status: Within limits, using full document
+2026-01-08 11:08:28,026 [INFO] Documentation validation passed - found 4 security keywords
+2026-01-08 11:08:28,036 [INFO] 
+================================================================================
+2026-01-08 11:08:28,038 [INFO] STEP 2: Loading input dataset
+2026-01-08 11:08:28,039 [INFO] ================================================================================
+2026-01-08 11:08:28,217 [INFO] Successfully loaded 13852 rows from data/hallucinationQuestions_responses_all.csv
+2026-01-08 11:08:28,218 [ERROR] Missing required columns: ['answer']
+2026-01-08 11:09:31,190 [INFO] ================================================================================
+2026-01-08 11:09:31,191 [INFO] STEP 1: Loading reference documentation
+2026-01-08 11:09:31,218 [INFO] ================================================================================
+2026-01-08 11:09:31,220 [INFO] Loading documentation from: data/Openbank_extracted_text.txt
+2026-01-08 11:09:31,221 [INFO] Documentation loaded successfully:
+2026-01-08 11:09:31,221 [INFO]   - Size: 4,816 characters
+2026-01-08 11:09:31,225 [INFO]   - Estimated tokens: ~1,204
+2026-01-08 11:09:31,226 [INFO]   - Context usage: ~0.9% of Llama-3.3-70B limit
+2026-01-08 11:09:31,226 [INFO]   - Status: Within limits, using full document
+2026-01-08 11:09:31,227 [INFO] Documentation validation passed - found 4 security keywords
+2026-01-08 11:09:31,227 [INFO] 
+================================================================================
+2026-01-08 11:09:31,228 [INFO] STEP 2: Loading input dataset
+2026-01-08 11:09:31,228 [INFO] ================================================================================
+2026-01-08 11:09:31,354 [INFO] Successfully loaded 13852 rows from data/hallucinationQuestions_responses_all.csv
+2026-01-08 11:09:31,356 [INFO] 
+================================================================================
+2026-01-08 11:09:31,356 [INFO] STEP 3: Identifying answers to evaluate for hallucinations
+2026-01-08 11:09:31,356 [INFO] ================================================================================
+2026-01-08 11:09:31,360 [INFO] Evaluating all 13852 rows for hallucinations
+2026-01-08 11:09:31,361 [INFO] 
+Resuming from existing output: data/hallucination_detection_results.csv
+2026-01-08 11:09:32,032 [INFO] Successfully loaded previous progress
+2026-01-08 11:09:32,036 [INFO] 
+Progress Status:
+2026-01-08 11:09:32,036 [INFO]   Total Answers: 13852
+2026-01-08 11:09:32,037 [INFO]   Completed: 250 (1.8%)
+2026-01-08 11:09:32,037 [INFO]   Pending: 13602 (98.2%)
+2026-01-08 11:09:42,341 [INFO] 
+================================================================================
+2026-01-08 11:09:42,342 [INFO] STEP 4: Starting evaluation
+2026-01-08 11:09:42,342 [INFO] ================================================================================
+
+2026-01-08 11:09:42,342 [INFO] Starting MULTIPROCESSING evaluation with 3 workers
+2026-01-08 11:09:45,943 [CRITICAL] Exception in initializer:
+Traceback (most recent call last):
+  File "C:\Program Files\Python313\Lib\concurrent\futures\process.py", line 232, in _process_worker
+    initializer(*initargs)
+    ~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\SDYER\repos\SantanderTesting\src\hallucination_detect_MP.py", line 73, in init_worker
+    from watsonx import WatsonX
+ModuleNotFoundError: No module named 'watsonx'
+2026-01-08 11:09:45,984 [CRITICAL] Exception in initializer:
+Traceback (most recent call last):
+  File "C:\Program Files\Python313\Lib\concurrent\futures\process.py", line 232, in _process_worker
+    initializer(*initargs)
+    ~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\SDYER\repos\SantanderTesting\src\hallucination_detect_MP.py", line 73, in init_worker
+    from watsonx import WatsonX
+ModuleNotFoundError: No module named 'watsonx'
+2026-01-08 11:09:46,006 [CRITICAL] Exception in initializer:
+Traceback (most recent call last):
+  File "C:\Program Files\Python313\Lib\concurrent\futures\process.py", line 232, in _process_worker
+    initializer(*initargs)
+    ~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\SDYER\repos\SantanderTesting\src\hallucination_detect_MP.py", line 73, in init_worker
+    from watsonx import WatsonX
+ModuleNotFoundError: No module named 'watsonx'
+2026-01-08 11:09:46,484 [ERROR] Error processing row 250: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:46,508 [ERROR] Error processing row 251: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:46,570 [ERROR] Error processing row 252: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:46,586 [ERROR] Error processing row 253: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:46,612 [ERROR] Error processing row 254: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:46,615 [ERROR] Error processing row 255: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:46,616 [ERROR] Error processing row 256: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:46,617 [ERROR] Error processing row 257: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:46,618 [ERROR] Error processing row 258: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:46,618 [ERROR] Error processing row 259: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,040 [INFO] Progress saved: 260/13852 complete
+2026-01-08 11:09:47,041 [ERROR] Error processing row 260: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,041 [ERROR] Error processing row 261: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,042 [ERROR] Error processing row 262: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,042 [ERROR] Error processing row 263: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,042 [ERROR] Error processing row 264: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,043 [ERROR] Error processing row 265: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,043 [ERROR] Error processing row 266: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,043 [ERROR] Error processing row 267: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,043 [ERROR] Error processing row 268: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,044 [ERROR] Error processing row 269: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,417 [INFO] Progress saved: 270/13852 complete
+2026-01-08 11:09:47,418 [ERROR] Error processing row 270: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,418 [ERROR] Error processing row 271: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,419 [ERROR] Error processing row 272: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,419 [ERROR] Error processing row 273: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,420 [ERROR] Error processing row 274: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,420 [ERROR] Error processing row 275: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,420 [ERROR] Error processing row 276: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,421 [ERROR] Error processing row 277: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,422 [ERROR] Error processing row 278: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,422 [ERROR] Error processing row 279: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,847 [INFO] Progress saved: 280/13852 complete
+2026-01-08 11:09:47,848 [ERROR] Error processing row 280: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,848 [ERROR] Error processing row 281: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,849 [ERROR] Error processing row 282: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,849 [ERROR] Error processing row 283: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,850 [ERROR] Error processing row 284: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,850 [ERROR] Error processing row 285: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,851 [ERROR] Error processing row 286: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,851 [ERROR] Error processing row 287: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,851 [ERROR] Error processing row 288: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:47,852 [ERROR] Error processing row 289: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,211 [INFO] Progress saved: 290/13852 complete
+2026-01-08 11:09:48,213 [ERROR] Error processing row 290: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,213 [ERROR] Error processing row 291: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,213 [ERROR] Error processing row 292: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,214 [ERROR] Error processing row 293: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,214 [ERROR] Error processing row 294: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,215 [ERROR] Error processing row 295: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,215 [ERROR] Error processing row 296: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,215 [ERROR] Error processing row 297: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,216 [ERROR] Error processing row 298: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,216 [ERROR] Error processing row 299: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,631 [INFO] Progress saved: 300/13852 complete
+2026-01-08 11:09:48,640 [ERROR] Error processing row 300: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,642 [ERROR] Error processing row 301: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,677 [ERROR] Error processing row 302: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,691 [ERROR] Error processing row 303: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,694 [ERROR] Error processing row 304: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,696 [ERROR] Error processing row 305: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,769 [ERROR] Error processing row 306: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,810 [ERROR] Error processing row 307: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,856 [ERROR] Error processing row 308: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:48,902 [ERROR] Error processing row 309: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,338 [INFO] Progress saved: 310/13852 complete
+2026-01-08 11:09:49,338 [ERROR] Error processing row 310: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,339 [ERROR] Error processing row 311: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,339 [ERROR] Error processing row 312: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,339 [ERROR] Error processing row 313: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,340 [ERROR] Error processing row 314: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,340 [ERROR] Error processing row 315: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,340 [ERROR] Error processing row 316: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,341 [ERROR] Error processing row 317: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,341 [ERROR] Error processing row 318: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,341 [ERROR] Error processing row 319: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,713 [INFO] Progress saved: 320/13852 complete
+2026-01-08 11:09:49,713 [ERROR] Error processing row 320: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,714 [ERROR] Error processing row 321: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,714 [ERROR] Error processing row 322: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,714 [ERROR] Error processing row 323: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,715 [ERROR] Error processing row 324: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,715 [ERROR] Error processing row 325: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,715 [ERROR] Error processing row 326: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,716 [ERROR] Error processing row 327: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,716 [ERROR] Error processing row 328: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:49,716 [ERROR] Error processing row 329: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,030 [INFO] Progress saved: 330/13852 complete
+2026-01-08 11:09:50,031 [ERROR] Error processing row 330: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,031 [ERROR] Error processing row 331: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,031 [ERROR] Error processing row 332: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,032 [ERROR] Error processing row 333: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,032 [ERROR] Error processing row 334: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,032 [ERROR] Error processing row 335: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,032 [ERROR] Error processing row 336: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,033 [ERROR] Error processing row 337: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,033 [ERROR] Error processing row 338: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,033 [ERROR] Error processing row 339: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,397 [INFO] Progress saved: 340/13852 complete
+2026-01-08 11:09:50,398 [ERROR] Error processing row 340: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,398 [ERROR] Error processing row 341: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,398 [ERROR] Error processing row 342: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,399 [ERROR] Error processing row 343: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,399 [ERROR] Error processing row 344: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,399 [ERROR] Error processing row 345: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,400 [ERROR] Error processing row 346: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,400 [ERROR] Error processing row 347: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,400 [ERROR] Error processing row 348: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,401 [ERROR] Error processing row 349: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,780 [INFO] Progress saved: 350/13852 complete
+2026-01-08 11:09:50,780 [ERROR] Error processing row 350: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,781 [ERROR] Error processing row 351: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,781 [ERROR] Error processing row 352: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,781 [ERROR] Error processing row 353: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,781 [ERROR] Error processing row 354: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,782 [ERROR] Error processing row 355: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,782 [ERROR] Error processing row 356: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,782 [ERROR] Error processing row 357: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,782 [ERROR] Error processing row 358: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:50,783 [ERROR] Error processing row 359: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,154 [INFO] Progress saved: 360/13852 complete
+2026-01-08 11:09:51,155 [ERROR] Error processing row 360: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,155 [ERROR] Error processing row 361: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,156 [ERROR] Error processing row 362: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,156 [ERROR] Error processing row 363: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,156 [ERROR] Error processing row 364: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,157 [ERROR] Error processing row 365: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,157 [ERROR] Error processing row 366: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,157 [ERROR] Error processing row 367: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,158 [ERROR] Error processing row 368: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,158 [ERROR] Error processing row 369: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,526 [INFO] Progress saved: 370/13852 complete
+2026-01-08 11:09:51,527 [ERROR] Error processing row 370: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,527 [ERROR] Error processing row 371: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,528 [ERROR] Error processing row 372: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,528 [ERROR] Error processing row 373: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,528 [ERROR] Error processing row 374: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,529 [ERROR] Error processing row 375: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,529 [ERROR] Error processing row 376: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,529 [ERROR] Error processing row 377: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,530 [ERROR] Error processing row 378: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,530 [ERROR] Error processing row 379: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,874 [INFO] Progress saved: 380/13852 complete
+2026-01-08 11:09:51,875 [ERROR] Error processing row 380: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,875 [ERROR] Error processing row 381: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,875 [ERROR] Error processing row 382: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,876 [ERROR] Error processing row 383: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,876 [ERROR] Error processing row 384: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,876 [ERROR] Error processing row 385: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,877 [ERROR] Error processing row 386: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,877 [ERROR] Error processing row 387: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,877 [ERROR] Error processing row 388: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:51,878 [ERROR] Error processing row 389: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,220 [INFO] Progress saved: 390/13852 complete
+2026-01-08 11:09:52,222 [ERROR] Error processing row 390: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,224 [ERROR] Error processing row 391: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,225 [ERROR] Error processing row 392: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,226 [ERROR] Error processing row 393: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,226 [ERROR] Error processing row 394: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,228 [ERROR] Error processing row 395: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,229 [ERROR] Error processing row 396: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,230 [ERROR] Error processing row 397: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,230 [ERROR] Error processing row 398: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,231 [ERROR] Error processing row 399: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,576 [INFO] Progress saved: 400/13852 complete
+2026-01-08 11:09:52,576 [ERROR] Error processing row 400: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,577 [ERROR] Error processing row 401: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,577 [ERROR] Error processing row 402: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,578 [ERROR] Error processing row 403: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,578 [ERROR] Error processing row 404: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,578 [ERROR] Error processing row 405: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,579 [ERROR] Error processing row 406: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,579 [ERROR] Error processing row 407: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,579 [ERROR] Error processing row 408: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,580 [ERROR] Error processing row 409: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,912 [INFO] Progress saved: 410/13852 complete
+2026-01-08 11:09:52,913 [ERROR] Error processing row 410: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,913 [ERROR] Error processing row 411: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,913 [ERROR] Error processing row 412: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,914 [ERROR] Error processing row 413: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,914 [ERROR] Error processing row 414: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,914 [ERROR] Error processing row 415: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,914 [ERROR] Error processing row 416: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,915 [ERROR] Error processing row 417: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,915 [ERROR] Error processing row 418: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:52,915 [ERROR] Error processing row 419: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,279 [INFO] Progress saved: 420/13852 complete
+2026-01-08 11:09:53,279 [ERROR] Error processing row 420: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,280 [ERROR] Error processing row 421: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,280 [ERROR] Error processing row 422: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,280 [ERROR] Error processing row 423: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,281 [ERROR] Error processing row 424: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,281 [ERROR] Error processing row 425: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,282 [ERROR] Error processing row 426: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,283 [ERROR] Error processing row 427: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,283 [ERROR] Error processing row 428: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,284 [ERROR] Error processing row 429: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,679 [INFO] Progress saved: 430/13852 complete
+2026-01-08 11:09:53,680 [ERROR] Error processing row 430: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,680 [ERROR] Error processing row 431: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,681 [ERROR] Error processing row 432: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,681 [ERROR] Error processing row 433: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,682 [ERROR] Error processing row 434: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,682 [ERROR] Error processing row 435: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,682 [ERROR] Error processing row 436: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,683 [ERROR] Error processing row 437: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,683 [ERROR] Error processing row 438: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:53,683 [ERROR] Error processing row 439: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,036 [INFO] Progress saved: 440/13852 complete
+2026-01-08 11:09:54,037 [ERROR] Error processing row 440: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,037 [ERROR] Error processing row 441: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,037 [ERROR] Error processing row 442: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,038 [ERROR] Error processing row 443: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,038 [ERROR] Error processing row 444: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,038 [ERROR] Error processing row 445: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,039 [ERROR] Error processing row 446: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,039 [ERROR] Error processing row 447: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,039 [ERROR] Error processing row 448: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,040 [ERROR] Error processing row 449: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,376 [INFO] Progress saved: 450/13852 complete
+2026-01-08 11:09:54,377 [ERROR] Error processing row 450: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,377 [ERROR] Error processing row 451: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,378 [ERROR] Error processing row 452: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,378 [ERROR] Error processing row 453: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,378 [ERROR] Error processing row 454: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,378 [ERROR] Error processing row 455: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,379 [ERROR] Error processing row 456: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,379 [ERROR] Error processing row 457: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,379 [ERROR] Error processing row 458: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,379 [ERROR] Error processing row 459: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,713 [INFO] Progress saved: 460/13852 complete
+2026-01-08 11:09:54,713 [ERROR] Error processing row 460: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,713 [ERROR] Error processing row 461: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,714 [ERROR] Error processing row 462: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,714 [ERROR] Error processing row 463: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,714 [ERROR] Error processing row 464: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,715 [ERROR] Error processing row 465: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,715 [ERROR] Error processing row 466: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,715 [ERROR] Error processing row 467: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,715 [ERROR] Error processing row 468: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:54,716 [ERROR] Error processing row 469: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,069 [INFO] Progress saved: 470/13852 complete
+2026-01-08 11:09:55,069 [ERROR] Error processing row 470: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,070 [ERROR] Error processing row 471: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,070 [ERROR] Error processing row 472: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,070 [ERROR] Error processing row 473: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,071 [ERROR] Error processing row 474: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,071 [ERROR] Error processing row 475: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,071 [ERROR] Error processing row 476: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,072 [ERROR] Error processing row 477: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,072 [ERROR] Error processing row 478: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,072 [ERROR] Error processing row 479: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,659 [INFO] Progress saved: 480/13852 complete
+2026-01-08 11:09:55,659 [ERROR] Error processing row 480: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,660 [ERROR] Error processing row 481: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,660 [ERROR] Error processing row 482: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,660 [ERROR] Error processing row 483: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,660 [ERROR] Error processing row 484: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,661 [ERROR] Error processing row 485: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,661 [ERROR] Error processing row 486: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,661 [ERROR] Error processing row 487: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,661 [ERROR] Error processing row 488: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:55,662 [ERROR] Error processing row 489: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,000 [INFO] Progress saved: 490/13852 complete
+2026-01-08 11:09:56,000 [ERROR] Error processing row 490: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,001 [ERROR] Error processing row 491: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,001 [ERROR] Error processing row 492: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,002 [ERROR] Error processing row 493: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,003 [ERROR] Error processing row 494: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,004 [ERROR] Error processing row 495: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,004 [ERROR] Error processing row 496: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,004 [ERROR] Error processing row 497: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,004 [ERROR] Error processing row 498: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,005 [ERROR] Error processing row 499: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,344 [INFO] Progress saved: 500/13852 complete
+2026-01-08 11:09:56,345 [ERROR] Error processing row 500: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,346 [ERROR] Error processing row 501: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,346 [ERROR] Error processing row 502: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,346 [ERROR] Error processing row 503: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,347 [ERROR] Error processing row 504: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,347 [ERROR] Error processing row 505: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,347 [ERROR] Error processing row 506: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,347 [ERROR] Error processing row 507: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,348 [ERROR] Error processing row 508: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,348 [ERROR] Error processing row 509: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,706 [INFO] Progress saved: 510/13852 complete
+2026-01-08 11:09:56,707 [ERROR] Error processing row 510: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,707 [ERROR] Error processing row 511: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,707 [ERROR] Error processing row 512: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,708 [ERROR] Error processing row 513: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,708 [ERROR] Error processing row 514: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,708 [ERROR] Error processing row 515: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,709 [ERROR] Error processing row 516: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,709 [ERROR] Error processing row 517: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,709 [ERROR] Error processing row 518: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:56,709 [ERROR] Error processing row 519: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,049 [INFO] Progress saved: 520/13852 complete
+2026-01-08 11:09:57,050 [ERROR] Error processing row 520: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,050 [ERROR] Error processing row 521: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,050 [ERROR] Error processing row 522: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,051 [ERROR] Error processing row 523: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,051 [ERROR] Error processing row 524: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,052 [ERROR] Error processing row 525: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,052 [ERROR] Error processing row 526: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,052 [ERROR] Error processing row 527: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,052 [ERROR] Error processing row 528: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,053 [ERROR] Error processing row 529: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,395 [INFO] Progress saved: 530/13852 complete
+2026-01-08 11:09:57,396 [ERROR] Error processing row 530: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,396 [ERROR] Error processing row 531: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,396 [ERROR] Error processing row 532: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,397 [ERROR] Error processing row 533: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,397 [ERROR] Error processing row 534: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,397 [ERROR] Error processing row 535: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,397 [ERROR] Error processing row 536: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,398 [ERROR] Error processing row 537: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,398 [ERROR] Error processing row 538: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,398 [ERROR] Error processing row 539: A process in the process pool was terminated abruptly while the future was running or pending.
+2026-01-08 11:09:57,595 [WARNING] 
+Evaluation interrupted by user
+2026-01-08 11:09:57,595 [INFO] Saving progress before exit...
+2026-01-08 11:09:57,924 [INFO] Progress saved: 540/13852 complete
+2026-01-08 11:09:57,925 [INFO] Progress saved - You can resume later by running the script again
+2026-01-08 11:34:47,746 [INFO] ================================================================================
+2026-01-08 11:34:47,746 [INFO] STEP 1: Loading reference documentation
+2026-01-08 11:34:47,747 [INFO] ================================================================================
+2026-01-08 11:34:47,747 [INFO] Loading documentation from: data/Openbank_extracted_text.txt
+2026-01-08 11:34:47,748 [INFO] Documentation loaded successfully:
+2026-01-08 11:34:47,748 [INFO]   - Size: 4,816 characters
+2026-01-08 11:34:47,748 [INFO]   - Estimated tokens: ~1,204
+2026-01-08 11:34:47,748 [INFO]   - Context usage: ~0.9% of Llama-3.3-70B limit
+2026-01-08 11:34:47,749 [INFO]   - Status: Within limits, using full document
+2026-01-08 11:34:47,749 [INFO] Documentation validation passed - found 4 security keywords
+2026-01-08 11:34:47,749 [INFO] 
+================================================================================
+2026-01-08 11:34:47,749 [INFO] STEP 2: Loading input dataset
+2026-01-08 11:34:47,750 [INFO] ================================================================================
+2026-01-08 11:34:47,890 [INFO] Successfully loaded 13852 rows from data/hallucinationQuestions_responses_all.csv
+2026-01-08 11:34:47,892 [INFO] 
+================================================================================
+2026-01-08 11:34:47,893 [INFO] STEP 3: Identifying answers to evaluate for hallucinations
+2026-01-08 11:34:47,893 [INFO] ================================================================================
+2026-01-08 11:34:47,897 [INFO] Evaluating all 13852 rows for hallucinations
+2026-01-08 11:34:47,897 [INFO] 
+Resuming from existing output: data/hallucination_detection_results.csv
+2026-01-08 11:34:48,137 [INFO] Successfully loaded previous progress
+2026-01-08 11:34:48,143 [INFO] 
+Progress Status:
+2026-01-08 11:34:48,143 [INFO]   Total Answers: 13852
+2026-01-08 11:34:48,164 [INFO]   Completed: 540 (3.9%)
+2026-01-08 11:34:48,173 [INFO]   Pending: 13312 (96.1%)
+2026-01-08 11:34:55,725 [INFO] 
+================================================================================
+2026-01-08 11:34:55,726 [INFO] STEP 4: Starting evaluation
+2026-01-08 11:34:55,726 [INFO] ================================================================================
+
+2026-01-08 11:34:55,726 [INFO] Starting MULTIPROCESSING evaluation with 3 workers
+2026-01-08 11:34:59,324 [INFO] Loading evaluation prompt from: src/hallucination_evaluation_prompt.txt
+2026-01-08 11:34:59,324 [INFO] Loading evaluation prompt from: src/hallucination_evaluation_prompt.txt
+2026-01-08 11:34:59,325 [WARNING] Prompt file not found: src/hallucination_evaluation_prompt.txt
+2026-01-08 11:34:59,325 [WARNING] Prompt file not found: src/hallucination_evaluation_prompt.txt
+2026-01-08 11:34:59,362 [INFO] Using default prompt template
+2026-01-08 11:34:59,335 [INFO] Using default prompt template
+2026-01-08 11:34:59,325 [WARNING] Prompt file not found: src/hallucination_evaluation_prompt.txt
+2026-01-08 11:34:59,422 [INFO] Using default prompt template
+2026-01-08 11:35:06,263 [INFO] Row 541: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:06,811 [INFO] Row 540: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:07,314 [INFO] Row 542: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:09,804 [INFO] Row 543: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:12,762 [INFO] Row 544: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:13,178 [INFO] Row 545: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:14,024 [INFO] Row 546: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:18,418 [INFO] Row 548: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:19,342 [INFO] Row 549: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:22,971 [INFO] Row 550: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:23,346 [INFO] Progress saved: 550/13852 complete
+2026-01-08 11:35:24,040 [INFO] Row 551: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:26,721 [INFO] Row 552: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:27,557 [INFO] Row 553: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:27,979 [INFO] Row 547: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:31,520 [INFO] Row 554: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:32,741 [INFO] Row 555: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:33,231 [INFO] Row 556: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:35,606 [INFO] Row 557: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:38,676 [INFO] Row 559: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:39,146 [INFO] Row 558: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:39,517 [INFO] Progress saved: 560/13852 complete
+2026-01-08 11:35:42,754 [INFO] Row 560: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:42,855 [INFO] Row 561: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:44,121 [INFO] Row 562: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:46,511 [INFO] Row 564: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:47,999 [INFO] Row 565: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:48,073 [INFO] Row 563: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:51,424 [INFO] Row 566: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:51,971 [INFO] Row 567: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:53,914 [INFO] Row 568: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:56,648 [INFO] Row 569: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:35:57,013 [INFO] Progress saved: 570/13852 complete
+2026-01-08 11:35:58,709 [INFO] Row 571: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:01,705 [INFO] Row 572: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:03,137 [INFO] Row 573: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:05,630 [INFO] Row 570: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:07,290 [INFO] Row 574: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:07,850 [INFO] Row 575: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:11,395 [INFO] Row 576: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:12,309 [INFO] Row 577: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:13,654 [INFO] Row 578: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:16,263 [INFO] Row 579: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:16,573 [INFO] Progress saved: 580/13852 complete
+2026-01-08 11:36:18,160 [INFO] Row 581: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:18,597 [INFO] Row 580: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:20,388 [INFO] Row 582: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:22,464 [INFO] Row 583: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:24,757 [INFO] Row 584: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:25,128 [INFO] Row 585: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:29,295 [INFO] Row 588: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:30,406 [INFO] Row 587: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:34,955 [INFO] Row 589: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:36,178 [INFO] Row 590: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:36,627 [INFO] Progress saved: 590/13852 complete
+2026-01-08 11:36:39,363 [INFO] Row 591: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:41,711 [INFO] Row 592: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:43,247 [INFO] Row 593: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:45,563 [INFO] Row 586: MODERATE_HALLUCINATION (MEDIUM) - HALLUCINATION
+2026-01-08 11:36:46,774 [INFO] Row 594: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:48,413 [INFO] Row 595: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:50,773 [INFO] Row 596: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:52,263 [INFO] Row 598: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:56,000 [INFO] Row 599: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:56,801 [INFO] Row 600: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:36:57,138 [INFO] Progress saved: 600/13852 complete
+2026-01-08 11:36:59,382 [INFO] Row 601: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:01,131 [INFO] Row 602: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:03,888 [INFO] Row 597: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:04,694 [INFO] Row 603: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:04,993 [INFO] Row 604: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:08,668 [INFO] Row 607: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:09,492 [INFO] Row 605: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:10,143 [INFO] Row 606: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:12,541 [INFO] Row 608: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:13,679 [INFO] Row 610: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:14,043 [INFO] Progress saved: 610/13852 complete
+2026-01-08 11:37:14,853 [INFO] Row 609: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:17,629 [INFO] Row 612: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:17,754 [INFO] Row 611: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:20,166 [INFO] Row 613: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:22,188 [INFO] Row 614: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:23,380 [INFO] Row 615: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:24,610 [INFO] Row 616: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:28,795 [INFO] Row 618: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:30,561 [INFO] Row 619: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:31,991 [INFO] Row 617: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:32,395 [INFO] Progress saved: 620/13852 complete
+2026-01-08 11:37:34,804 [INFO] Row 620: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:35,593 [INFO] Row 621: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:37,039 [INFO] Row 622: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:39,136 [INFO] Row 623: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:40,263 [INFO] Row 624: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:41,157 [INFO] Row 625: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:44,059 [INFO] Row 626: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:44,605 [INFO] Row 627: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:45,093 [INFO] Row 628: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:48,130 [INFO] Row 629: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:48,509 [INFO] Progress saved: 630/13852 complete
+2026-01-08 11:37:50,958 [INFO] Row 630: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:52,215 [INFO] Row 632: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:54,855 [INFO] Row 633: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:37:56,215 [INFO] Row 634: MODERATE_HALLUCINATION (MEDIUM) - HALLUCINATION
+2026-01-08 11:37:59,080 [INFO] Row 635: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:00,332 [INFO] Row 636: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:03,355 [INFO] Row 637: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:05,258 [INFO] Row 638: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:11,521 [INFO] Row 640: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:14,599 [INFO] Row 639: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:14,977 [INFO] Progress saved: 640/13852 complete
+2026-01-08 11:38:15,249 [INFO] Row 631: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:16,742 [INFO] Row 641: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:18,897 [INFO] Row 642: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:20,620 [INFO] Row 643: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:21,028 [INFO] Row 644: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:23,602 [INFO] Row 645: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:26,335 [INFO] Row 646: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:26,687 [INFO] Row 647: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:27,679 [INFO] Row 648: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:31,027 [INFO] Row 650: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:31,349 [INFO] Progress saved: 650/13852 complete
+2026-01-08 11:38:31,730 [INFO] Row 651: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:33,404 [INFO] Row 649: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:36,409 [INFO] Row 652: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:42,982 [INFO] Row 653: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:38:48,083 [INFO] Row 656: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-08 11:51:01,919 [WARNING] Failed to parse JSON, using fallback parsing
+2026-01-08 11:51:07,958 [WARNING] Failed to parse JSON, using fallback parsing
+2026-01-08 12:02:18,703 [WARNING] Failed to parse JSON, using fallback parsing
+2026-01-08 12:13:32,721 [WARNING] Failed to parse JSON, using fallback parsing
+2026-01-08 12:13:44,170 [WARNING] Failed to parse JSON, using fallback parsing
+2026-01-08 12:24:53,425 [WARNING] 
+Evaluation interrupted by user
+2026-01-08 12:24:53,426 [INFO] Saving progress before exit...

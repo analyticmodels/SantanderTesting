@@ -1,0 +1,31 @@
+# Core data processing
+pandas>=2.0.0
+fastparquet>=2023.0.0
+
+# HTTP & API clients
+requests>=2.28.0
+httpx>=0.24.0
+
+# LLM providers
+anthropic>=0.18.0
+ollama>=0.1.0
+huggingface_hub>=0.20.0
+
+# HuggingFace local inference (optional - for local model loading)
+# transformers>=4.36.0
+# torch>=2.0.0
+# accelerate>=0.25.0
+# bitsandbytes>=0.41.0
+
+# Evaluation framework
+deepeval>=0.21.0
+
+# Environment & configuration
+python-dotenv>=1.0.0
+
+# Progress bars
+tqdm>=4.65.0
+
+# Excel/document generation
+openpyxl>=3.1.0
+python-docx>=1.0.0
