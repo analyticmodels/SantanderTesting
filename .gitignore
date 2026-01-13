@@ -85,3 +85,8 @@ dmypy.json
 
 # Claude Code
 .claude/
+
+# Large data files
+data/*.parquet
+data/*.csv
+archive/
