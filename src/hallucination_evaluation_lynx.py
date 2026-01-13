@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import os
 from dotenv import load_dotenv
+from multiprocessing import Pool, cpu_count
 
 # Load environment variables from .env file
 load_dotenv()
@@ -11,7 +12,7 @@ load_dotenv()
 # CONFIGURATION
 # =============================================================================
 # Hallucination detection settings
-# Options: "lynx" (Patronus Lynx - specialized) or "llama" (Llama 3.2 - general purpose)
+# Options: "lynx" (Patronus Lynx - specialized), "llama" (Llama 3.2 - general purpose), or "watsonx"
 DETECTION_MODEL = os.getenv("DETECTION_MODEL", "lynx")
 
 # Lynx detection settings
@@ -19,6 +20,15 @@ LYNX_MODEL = os.getenv("LYNX_MODEL", "tensortemplar/patronus-lynx:8b-instruct-q4
 
 # Llama 3.2 detection settings
 LLAMA_DETECTION_MODEL = os.getenv("LLAMA_DETECTION_MODEL", "llama3.2:latest")
+
+# WatsonX detection settings
+WATSONX_BASE_URL = os.getenv("WATSONX_BASE_URL", "https://apigee-outbound-dev1.nonprod.corpint.net")
+WATSONX_BASIC_CREDENTIALS = os.getenv(
+    "WATSONX_BASIC_CREDENTIALS",
+
+)
+WATSONX_DETECTION_MODEL = os.getenv("WATSONX_DETECTION_MODEL", "meta-llama/llama-3-3-70b-instruct")
+WATSONX_MAX_TOKENS = int(os.getenv("WATSONX_MAX_TOKENS", "800"))
 # =============================================================================
 
 # Lynx prompt template for hallucination detection
@@ -321,18 +331,198 @@ def detect_hallucination_llama(question: str, answer: str, document: str = "") -
     }
 
 
-def detect_hallucination(question: str, answer: str, document: str = "", model: str = None) -> dict:
+def detect_hallucination_watsonx(question: str, answer: str, document: str = "") -> dict:
     """
-    Detect if an answer contains hallucinations using the configured detection model.
+    Use WatsonX to detect if an answer contains hallucinations.
 
-    This is the main entry point for hallucination detection. It dispatches to either
-    Patronus Lynx (specialized) or Llama 3.2 (general purpose) based on configuration.
+    This function uses WatsonX LLM with a carefully crafted prompt to identify hallucinations.
+    It works similarly to the Llama detection but uses WatsonX API.
 
     Args:
         question: The question that was asked
         answer: The answer to evaluate
         document: Reference document/context (optional)
-        model: Detection model to use ("lynx" or "llama"). If None, uses DETECTION_MODEL config.
+
+    Returns:
+        dict with 'reasoning', 'score', 'confidence', 'suspicious_claims', and 'raw_response'
+    """
+    try:
+        from watsonx import WatsonX
+    except ImportError:
+        raise ImportError(
+            "WatsonX module not found. Please ensure the watsonx module is available."
+        )
+
+    # Use Llama prompt template (works well with WatsonX too)
+    if document and document.strip():
+        prompt = LLAMA_HALLUCINATION_PROMPT.format(
+            question=question,
+            document=document,
+            answer=answer
+        )
+    else:
+        prompt = LLAMA_HALLUCINATION_PROMPT_NO_DOC.format(
+            question=question,
+            answer=answer
+        )
+
+    # Initialize WatsonX client
+    watsonx_client = WatsonX()
+    oauth_url = f"{WATSONX_BASE_URL}/oauth2/accesstoken-clientcredentials"
+    token = watsonx_client.post_oauth2(WATSONX_BASIC_CREDENTIALS, oauth_url)
+
+    # Make API call with retry logic for token expiration
+    try:
+        generated_text, _, _ = watsonx_client.post_text_generation(
+            WATSONX_BASE_URL,
+            token,
+            WATSONX_DETECTION_MODEL,
+            prompt,
+            WATSONX_MAX_TOKENS
+        )
+    except Exception as e:
+        # Check if it's a 401 error (token expired)
+        if hasattr(e, 'response') and hasattr(e.response, 'status_code') and e.response.status_code == 401:
+            # Refresh token and retry
+            token = watsonx_client.post_oauth2(WATSONX_BASIC_CREDENTIALS, oauth_url)
+            generated_text, _, _ = watsonx_client.post_text_generation(
+                WATSONX_BASE_URL,
+                token,
+                WATSONX_DETECTION_MODEL,
+                prompt,
+                WATSONX_MAX_TOKENS
+            )
+        else:
+            raise
+
+    raw_response = generated_text.strip()
+
+    # Try to parse JSON from response
+    try:
+        # Find JSON in response (it might have extra text)
+        json_start = raw_response.find('{')
+        json_end = raw_response.rfind('}') + 1
+        if json_start != -1 and json_end > json_start:
+            json_str = raw_response[json_start:json_end]
+            parsed = json.loads(json_str)
+
+            # Normalize score from various possible formats
+            score = parsed.get('SCORE', 'UNKNOWN')
+            if isinstance(score, bool):
+                score = 'FAIL' if score else 'PASS'
+            elif isinstance(score, str):
+                score = score.upper()
+                if score not in ('PASS', 'FAIL'):
+                    # Check HALLUCINATION_DETECTED field as backup
+                    if parsed.get('HALLUCINATION_DETECTED', False):
+                        score = 'FAIL'
+                    else:
+                        score = 'PASS'
+
+            return {
+                'reasoning': parsed.get('REASONING', []),
+                'score': score,
+                'confidence': parsed.get('CONFIDENCE', 'MEDIUM'),
+                'suspicious_claims': parsed.get('SUSPICIOUS_CLAIMS', []),
+                'hallucination_detected': parsed.get('HALLUCINATION_DETECTED', score == 'FAIL'),
+                'raw_response': raw_response
+            }
+    except json.JSONDecodeError:
+        pass
+
+    # Fallback: extract score from text using multiple indicators
+    score = 'UNKNOWN'
+    confidence = 'LOW'
+
+    raw_upper = raw_response.upper()
+
+    # Check for explicit FAIL/PASS
+    if 'SCORE": "FAIL' in raw_upper or 'SCORE":"FAIL' in raw_upper:
+        score = 'FAIL'
+    elif 'SCORE": "PASS' in raw_upper or 'SCORE":"PASS' in raw_upper:
+        score = 'PASS'
+    # Check for hallucination detected indicators
+    elif 'HALLUCINATION_DETECTED": TRUE' in raw_upper or 'HALLUCINATION DETECTED' in raw_upper:
+        score = 'FAIL'
+    elif 'HALLUCINATION_DETECTED": FALSE' in raw_upper or 'NO HALLUCINATION' in raw_upper:
+        score = 'PASS'
+    # Last resort: look for keywords
+    elif 'FAIL' in raw_upper and 'PASS' not in raw_upper:
+        score = 'FAIL'
+    elif 'PASS' in raw_upper and 'FAIL' not in raw_upper:
+        score = 'PASS'
+
+    return {
+        'reasoning': raw_response,
+        'score': score,
+        'confidence': confidence,
+        'suspicious_claims': [],
+        'hallucination_detected': score == 'FAIL',
+        'raw_response': raw_response
+    }
+
+
+def _process_qa_pair(args):
+    """
+    Worker function to evaluate a single question-answer pair for hallucinations.
+
+    This function is designed to be called by multiprocessing.Pool.
+
+    Args:
+        args: Tuple of (index, question, answer, reference_doc, detection_model)
+
+    Returns:
+        Tuple of (index, result_entry_dict)
+    """
+    index, question, answer, reference_doc, detection_model = args
+
+    # Run hallucination detection
+    result = detect_hallucination(
+        question=question,
+        answer=answer,
+        document=reference_doc,
+        model=detection_model
+    )
+
+    # Normalize reasoning to string (can be list from JSON or string from fallback)
+    reasoning = result['reasoning']
+    if isinstance(reasoning, list):
+        reasoning = json.dumps(reasoning, indent=2)
+
+    result_entry = {
+        'question': question,
+        'answer': answer,
+        'hallucination_score': result['score'],
+        'confidence': result.get('confidence', 'N/A'),
+        'reasoning': reasoning,
+        'raw_response': result['raw_response'],
+        'detection_model': detection_model
+    }
+
+    # Add model-specific fields if available
+    if detection_model in ("llama", "watsonx"):
+        suspicious = result.get('suspicious_claims', [])
+        # Convert list to JSON string for parquet compatibility
+        if isinstance(suspicious, list):
+            suspicious = json.dumps(suspicious)
+        result_entry['suspicious_claims'] = suspicious
+        result_entry['hallucination_detected'] = result.get('hallucination_detected', False)
+
+    return (index, result_entry)
+
+
+def detect_hallucination(question: str, answer: str, document: str = "", model: str = None) -> dict:
+    """
+    Detect if an answer contains hallucinations using the configured detection model.
+
+    This is the main entry point for hallucination detection. It dispatches to either
+    Patronus Lynx (specialized), Llama 3.2 (general purpose), or WatsonX based on configuration.
+
+    Args:
+        question: The question that was asked
+        answer: The answer to evaluate
+        document: Reference document/context (optional)
+        model: Detection model to use ("lynx", "llama", or "watsonx"). If None, uses DETECTION_MODEL config.
 
     Returns:
         dict with 'reasoning', 'score', 'confidence', and 'raw_response'
@@ -347,13 +537,15 @@ def detect_hallucination(question: str, answer: str, document: str = "", model: 
         return detect_hallucination_lynx(question, answer, document)
     elif model == "llama":
         return detect_hallucination_llama(question, answer, document)
+    elif model == "watsonx":
+        return detect_hallucination_watsonx(question, answer, document)
     else:
-        raise ValueError(f"Unknown detection model: {model}. Use 'lynx' or 'llama'.")
+        raise ValueError(f"Unknown detection model: {model}. Use 'lynx', 'llama', or 'watsonx'.")
 
 
 def run_hallucination_detection(input_file: Path = None, output_file: Path = None,
                                 limit: int = None, detection_model: str = None,
-                                document: str = ""):
+                                document: str = "", num_workers: int = None):
     """
     Run hallucination detection on question-answer pairs.
 
@@ -363,11 +555,16 @@ def run_hallucination_detection(input_file: Path = None, output_file: Path = Non
         output_file: Path to save detection results.
                     If None, auto-generates based on detection model.
         limit: Optional limit on number of pairs to process (for testing)
-        detection_model: Model to use for detection ("lynx" or "llama").
+        detection_model: Model to use for detection ("lynx", "llama", or "watsonx").
                         If None, uses DETECTION_MODEL from config.
         document: Optional reference document for all Q&A pairs.
                  Can also be a path to a text file.
+        num_workers: Number of parallel workers for multiprocessing.
+                    Defaults to cpu_count(). Set to 1 to disable multiprocessing.
     """
+    # Use default for num_workers if not specified
+    if num_workers is None:
+        num_workers = cpu_count()
     # Use configured model if not specified
     if detection_model is None:
         detection_model = DETECTION_MODEL
@@ -375,7 +572,10 @@ def run_hallucination_detection(input_file: Path = None, output_file: Path = Non
     print(f"Using detection model: {detection_model}")
     if detection_model == "llama":
         print(f"  Llama model: {LLAMA_DETECTION_MODEL}")
-    else:
+    elif detection_model == "watsonx":
+        print(f"  WatsonX model: {WATSONX_DETECTION_MODEL}")
+        print(f"  Base URL: {WATSONX_BASE_URL}")
+    else:  # lynx
         print(f"  Lynx model: {LYNX_MODEL}")
 
     # Auto-detect input file if not specified
@@ -414,45 +614,36 @@ def run_hallucination_detection(input_file: Path = None, output_file: Path = Non
         df = df[:limit]
 
     print(f"Loaded {len(df)} question-answer pairs from {input_file}")
+    print(f"Using {num_workers} worker(s) for parallel processing")
 
-    # Run hallucination detection on all Q&A pairs
-    results = []
-    for i, row in df.iterrows():
-        result = detect_hallucination(
-            question=row['question'],
-            answer=row['answer'],
-            document=reference_doc,
-            model=detection_model
-        )
+    # Prepare arguments for each worker
+    worker_args = [
+        (i, row['question'], row['answer'], reference_doc, detection_model)
+        for i, row in df.iterrows()
+    ]
 
-        # Normalize reasoning to string (can be list from JSON or string from fallback)
-        reasoning = result['reasoning']
-        if isinstance(reasoning, list):
-            reasoning = json.dumps(reasoning, indent=2)
+    # Process Q&A pairs in parallel or sequentially
+    if num_workers > 1:
+        print(f"Processing {len(df)} Q&A pairs in parallel...")
+        with Pool(num_workers) as pool:
+            # Use imap for progress tracking
+            results_list = []
+            for i, result in enumerate(pool.imap(_process_qa_pair, worker_args), 1):
+                results_list.append(result)
+                if i % 10 == 0:
+                    print(f"Processed {i}/{len(df)} pairs")
+    else:
+        print(f"Processing {len(df)} Q&A pairs sequentially...")
+        results_list = []
+        for i, arg in enumerate(worker_args, 1):
+            result = _process_qa_pair(arg)
+            results_list.append(result)
+            if i % 10 == 0:
+                print(f"Processed {i}/{len(df)} pairs")
 
-        result_entry = {
-            'question': row['question'],
-            'answer': row['answer'],
-            'hallucination_score': result['score'],
-            'confidence': result.get('confidence', 'N/A'),
-            'reasoning': reasoning,
-            'raw_response': result['raw_response'],
-            'detection_model': detection_model
-        }
-
-        # Add Llama-specific fields if available
-        if detection_model == "llama":
-            suspicious = result.get('suspicious_claims', [])
-            # Convert list to JSON string for parquet compatibility
-            if isinstance(suspicious, list):
-                suspicious = json.dumps(suspicious)
-            result_entry['suspicious_claims'] = suspicious
-            result_entry['hallucination_detected'] = result.get('hallucination_detected', False)
-
-        results.append(result_entry)
-
-        if (i + 1) % 10 == 0:
-            print(f"Processed {i + 1}/{len(df)} pairs")
+    # Sort results by index and collect all result entries
+    results_list.sort(key=lambda x: x[0])
+    results = [result_entry for (_idx, result_entry) in results_list]
 
     # Create results DataFrame
     df_results = pd.DataFrame(results)
@@ -487,10 +678,12 @@ if __name__ == "__main__":
                         help="Input parquet file with Q&A pairs (default: auto-detect)")
     parser.add_argument("--output-file", "-o", type=str, default=None,
                         help="Output parquet file for detection results (default: auto-generate)")
-    parser.add_argument("--detection-model", "-d", choices=["lynx", "llama"], default=None,
-                        help="Hallucination detection model (default: from DETECTION_MODEL env/config)")
+    parser.add_argument("--detection-model", "-d", choices=["lynx", "llama", "watsonx"], default=None,
+                        help="Hallucination detection model: 'lynx', 'llama', or 'watsonx' (default: from DETECTION_MODEL env/config)")
     parser.add_argument("--limit", "-l", type=int, default=None,
                         help="Limit number of Q&A pairs to process (for testing)")
+    parser.add_argument("--workers", "-w", type=int, default=None,
+                        help=f"Number of parallel workers (default: {cpu_count()}). Set to 1 to disable multiprocessing")
     parser.add_argument("--document", "-c", type=str, default="",
                         help="Reference document text or path to document file")
 
@@ -506,7 +699,8 @@ if __name__ == "__main__":
         output_file=output_path,
         limit=args.limit,
         detection_model=args.detection_model,
-        document=args.document
+        document=args.document,
+        num_workers=args.workers
     )
 
     print(f"\n✓ Successfully completed hallucination detection")

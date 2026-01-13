@@ -10,7 +10,7 @@ load_dotenv()
 # =============================================================================
 # CONFIGURATION - Select your LLM provider
 # =============================================================================
-# Options: "ollama" (default) or "anthropic"
+# Options: "ollama" (default), "anthropic", or "watsonx"
 LLM_PROVIDER = "ollama"
 
 # Ollama settings
@@ -19,6 +19,14 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "granite4:latest")
 # Anthropic settings
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929")
+
+# WatsonX settings
+WATSONX_BASE_URL = os.getenv("WATSONX_BASE_URL", "https://apigee-outbound-dev1.nonprod.corpint.net")
+WATSONX_BASIC_CREDENTIALS = os.getenv(
+    "WATSONX_BASIC_CREDENTIALS",
+)
+WATSONX_MODEL = os.getenv("WATSONX_MODEL", "meta-llama/llama-3-3-70b-instruct")
+WATSONX_MAX_TOKENS = int(os.getenv("WATSONX_MAX_TOKENS", "2000"))
 # =============================================================================
 
 # Initialize clients based on provider
@@ -32,18 +40,27 @@ if LLM_PROVIDER == "anthropic":
         http_client=http_client
     )
     print(f"Using Anthropic API with model: {ANTHROPIC_MODEL}")
+elif LLM_PROVIDER == "watsonx":
+    print(f"Using WatsonX with model: {WATSONX_MODEL}")
+    print(f"Base URL: {WATSONX_BASE_URL}")
 else:
     import ollama
     print(f"Using Ollama with model: {OLLAMA_MODEL}")
 
 
-def generate_with_llm(prompt: str, provider: str = None, model: str = None, api_key: str = None) -> str:
+def generate_with_llm(prompt: str, provider: str = None, model: str = None, api_key: str = None,
+                     watsonx_config: dict = None) -> str:
     """Generate a response using the configured LLM provider."""
     # Use globals if not specified
     if provider is None:
         provider = LLM_PROVIDER
     if model is None:
-        model = ANTHROPIC_MODEL if provider == "anthropic" else OLLAMA_MODEL
+        if provider == "anthropic":
+            model = ANTHROPIC_MODEL
+        elif provider == "watsonx":
+            model = WATSONX_MODEL
+        else:
+            model = OLLAMA_MODEL
     if api_key is None:
         api_key = ANTHROPIC_API_KEY
 
@@ -58,7 +75,67 @@ def generate_with_llm(prompt: str, provider: str = None, model: str = None, api_
             messages=[{"role": "user", "content": prompt}]
         )
         return response.content[0].text.strip()
-    else:
+
+    elif provider == "watsonx":
+        # WatsonX integration
+        try:
+            from watsonx import WatsonX
+        except ImportError:
+            raise ImportError(
+                "WatsonX module not found. Please ensure the watsonx module is available."
+            )
+
+        # Get watsonx config
+        if watsonx_config is None:
+            watsonx_config = {
+                'base_url': WATSONX_BASE_URL,
+                'credentials': WATSONX_BASIC_CREDENTIALS,
+                'max_tokens': WATSONX_MAX_TOKENS
+            }
+
+        base_url = watsonx_config.get('base_url', WATSONX_BASE_URL)
+        credentials = watsonx_config.get('credentials', WATSONX_BASIC_CREDENTIALS)
+        max_tokens = watsonx_config.get('max_tokens', WATSONX_MAX_TOKENS)
+        token = watsonx_config.get('token')
+
+        # Initialize WatsonX client if needed
+        watsonx_client = WatsonX()
+
+        # Get or refresh token
+        if token is None:
+            oauth_url = f"{base_url}/oauth2/accesstoken-clientcredentials"
+            token = watsonx_client.post_oauth2(credentials, oauth_url)
+
+        # Make API call with retry logic for token expiration
+        try:
+            generated_text, _, _ = watsonx_client.post_text_generation(
+                base_url,
+                token,
+                model,
+                prompt,
+                max_tokens
+            )
+            return generated_text.strip()
+        except Exception as e:
+            # Check if it's a 401 error (token expired)
+            if hasattr(e, 'response') and hasattr(e.response, 'status_code') and e.response.status_code == 401:
+                # Refresh token and retry
+                oauth_url = f"{base_url}/oauth2/accesstoken-clientcredentials"
+                token = watsonx_client.post_oauth2(credentials, oauth_url)
+                watsonx_config['token'] = token
+
+                generated_text, _, _ = watsonx_client.post_text_generation(
+                    base_url,
+                    token,
+                    model,
+                    prompt,
+                    max_tokens
+                )
+                return generated_text.strip()
+            else:
+                raise
+
+    else:  # ollama
         import ollama
         response = ollama.chat(
             model=model,
@@ -74,14 +151,14 @@ def _process_question(args):
     This function is designed to be called by multiprocessing.Pool.
 
     Args:
-        args: Tuple of (index, question, provider, model, api_key)
+        args: Tuple of (index, question, provider, model, api_key, watsonx_config)
 
     Returns:
         Tuple of (index, question, answer)
     """
-    index, question, provider, model, api_key = args
+    index, question, provider, model, api_key, watsonx_config = args
 
-    answer = generate_with_llm(question, provider, model, api_key)
+    answer = generate_with_llm(question, provider, model, api_key, watsonx_config)
 
     return (index, question, answer)
 
@@ -123,10 +200,27 @@ def generate_answers(input_file: Path = None, output_file: Path = None, num_work
 
     # Prepare arguments for each worker
     provider = LLM_PROVIDER
-    model = ANTHROPIC_MODEL if provider == "anthropic" else OLLAMA_MODEL
-    api_key = ANTHROPIC_API_KEY if provider == "anthropic" else None
+    if provider == "anthropic":
+        model = ANTHROPIC_MODEL
+        api_key = ANTHROPIC_API_KEY
+    elif provider == "watsonx":
+        model = WATSONX_MODEL
+        api_key = None
+    else:  # ollama
+        model = OLLAMA_MODEL
+        api_key = None
 
-    worker_args = [(i, question, provider, model, api_key) for i, question in enumerate(questions)]
+    # Prepare WatsonX configuration if using watsonx provider
+    watsonx_config = None
+    if provider == "watsonx":
+        watsonx_config = {
+            'base_url': WATSONX_BASE_URL,
+            'credentials': WATSONX_BASIC_CREDENTIALS,
+            'max_tokens': WATSONX_MAX_TOKENS,
+            'token': None  # Will be populated on first use
+        }
+
+    worker_args = [(i, question, provider, model, api_key, watsonx_config) for i, question in enumerate(questions)]
 
     # Process questions in parallel or sequentially
     if num_workers > 1:
@@ -158,7 +252,9 @@ def generate_answers(input_file: Path = None, output_file: Path = None, num_work
     if output_file is None:
         if LLM_PROVIDER == "anthropic":
             output_file = Path('../data/hallucinationQA_anthropic.parquet')
-        else:
+        elif LLM_PROVIDER == "watsonx":
+            output_file = Path(f'../data/hallucinationQA_{WATSONX_MODEL.replace("/", "_").replace(":", "_")}.parquet')
+        else:  # ollama
             output_file = Path(f'../data/hallucinationQA_{OLLAMA_MODEL.replace(":", "_")}.parquet')
 
     # Save results
@@ -182,7 +278,7 @@ if __name__ == "__main__":
                         help="Output parquet file for Q&A pairs (default: auto-generate based on provider)")
     parser.add_argument("--workers", "-w", type=int, default=None,
                         help=f"Number of parallel workers (default: {cpu_count()}). Set to 1 to disable multiprocessing")
-    parser.add_argument("--provider", "-p", choices=["ollama", "anthropic"], default=None,
+    parser.add_argument("--provider", "-p", choices=["ollama", "anthropic", "watsonx"], default=None,
                         help="LLM provider to use (default: from config)")
 
     args = parser.parse_args()
@@ -199,6 +295,9 @@ if __name__ == "__main__":
                 http_client=http_client
             )
             print(f"Switched to Anthropic API with model: {ANTHROPIC_MODEL}")
+        elif LLM_PROVIDER == "watsonx":
+            print(f"Switched to WatsonX with model: {WATSONX_MODEL}")
+            print(f"Base URL: {WATSONX_BASE_URL}")
 
     # Convert string paths to Path objects if provided
     input_path = Path(args.input_file) if args.input_file else None
