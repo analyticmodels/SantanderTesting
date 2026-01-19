@@ -11,7 +11,7 @@ load_dotenv()
 # CONFIGURATION - Select your LLM provider
 # =============================================================================
 # Options: "ollama" (default), "anthropic", or "watsonx"
-LLM_PROVIDER = "ollama"
+LLM_PROVIDER = "watsonx"
 
 # Ollama settings
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "granite4:latest")

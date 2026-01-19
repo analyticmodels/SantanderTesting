@@ -55,3 +55,52 @@ Progress Status:
 2026-01-09 08:18:37,210 [INFO]   Completed: 655 (4.7%)
 2026-01-09 08:18:37,210 [INFO]   Pending: 13197 (95.3%)
 2026-01-09 08:18:48,294 [INFO] Evaluation cancelled by user
+2026-01-14 12:37:26,208 [INFO] ================================================================================
+2026-01-14 12:37:26,210 [INFO] STEP 1: Loading reference documentation
+2026-01-14 12:37:26,210 [INFO] ================================================================================
+2026-01-14 12:37:26,211 [INFO] Loading documentation from: data/Openbank_extracted_text.txt
+2026-01-14 12:37:26,211 [INFO] Documentation loaded successfully:
+2026-01-14 12:37:26,211 [INFO]   - Size: 11,927 characters
+2026-01-14 12:37:26,212 [INFO]   - Estimated tokens: ~2,981
+2026-01-14 12:37:26,212 [INFO]   - Context usage: ~2.3% of Llama-3.3-70B limit
+2026-01-14 12:37:26,212 [INFO]   - Status: Within limits, using full document
+2026-01-14 12:37:26,212 [INFO] Documentation validation passed - found 5 security keywords
+2026-01-14 12:37:26,213 [INFO] 
+================================================================================
+2026-01-14 12:37:26,213 [INFO] STEP 2: Loading input dataset
+2026-01-14 12:37:26,213 [INFO] ================================================================================
+2026-01-14 12:37:26,327 [INFO] Successfully loaded 13852 rows from data/hallucinationQuestions_responses_all.csv
+2026-01-14 12:37:26,329 [INFO] 
+================================================================================
+2026-01-14 12:37:26,329 [INFO] STEP 3: Identifying answers to evaluate for hallucinations
+2026-01-14 12:37:26,329 [INFO] ================================================================================
+2026-01-14 12:37:26,332 [INFO] Evaluating all 13852 rows for hallucinations
+2026-01-14 12:37:26,332 [INFO] 
+Resuming from existing output: data/hallucination_detection_results.csv
+2026-01-14 12:37:26,415 [INFO] Successfully loaded previous progress
+2026-01-14 12:37:26,419 [INFO] 
+Progress Status:
+2026-01-14 12:37:26,420 [INFO]   Total Answers: 13852
+2026-01-14 12:37:26,420 [INFO]   Completed: 1453 (10.5%)
+2026-01-14 12:37:26,420 [INFO]   Pending: 12399 (89.5%)
+2026-01-14 12:37:30,178 [INFO] 
+================================================================================
+2026-01-14 12:37:30,179 [INFO] STEP 4: Starting evaluation
+2026-01-14 12:37:30,179 [INFO] ================================================================================
+
+2026-01-14 12:37:30,179 [INFO] Starting MULTITHREADING evaluation with 3 threads
+2026-01-14 12:37:30,185 [INFO] Loading evaluation prompt from: src/hallucination_evaluation_prompt.txt
+2026-01-14 12:37:30,186 [WARNING] Prompt file not found: src/hallucination_evaluation_prompt.txt
+2026-01-14 12:37:30,202 [INFO] Using default prompt template
+2026-01-14 12:37:30,224 [INFO] Refreshing WatsonX access token...
+2026-01-14 12:37:30,605 [INFO] Token refreshed successfully
+2026-01-14 12:37:37,002 [INFO] Row 1453: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-14 12:37:39,664 [INFO] Row 1454: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-14 12:37:40,437 [INFO] Row 1455: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-14 12:37:42,466 [INFO] Row 1456: SEVERE_HALLUCINATION (CRITICAL) - HALLUCINATION
+2026-01-14 12:42:32,272 [INFO] Refreshing WatsonX access token...
+2026-01-14 12:42:32,384 [INFO] Token refreshed successfully
+2026-01-14 12:45:11,064 [WARNING] Failed to parse JSON, using fallback parsing
+2026-01-14 12:46:39,436 [WARNING] Failed to parse JSON, using fallback parsing
+2026-01-14 12:47:38,310 [INFO] Refreshing WatsonX access token...
+2026-01-14 12:47:38,415 [INFO] Token refreshed successfully

@@ -3,12 +3,20 @@ from pathlib import Path
 import random
 import re
 import os
+import requests
 from dotenv import load_dotenv
-from multiprocessing import Pool, cpu_count
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
+from threading import Lock
+from AgentAssistContext import Agent_assist_context
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Disable SSL warnings
+requests.packages.urllib3.disable_warnings(
+    category=requests.packages.urllib3.exceptions.InsecureRequestWarning
+)
 
 # =============================================================================
 # CONFIGURATION - Select your LLM provider
@@ -26,20 +34,64 @@ ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929")
 # WatsonX settings
 WATSONX_BASE_URL = os.getenv("WATSONX_BASE_URL", "https://apigee-outbound-dev1.nonprod.corpint.net")
 WATSONX_BASIC_CREDENTIALS = os.getenv(
-    "WATSONX_BASIC_CREDENTIALS","Yk8xQ3BPeW1NaWVKVm5CSEdla3BDaEFoVjdreTl1dUE6eGpuVnZqTEo1TmRQZGRtYg=="
+    "WATSONX_BASIC_CREDENTIALS",
+    "dmtPMFlrcUltTXVsNEpMeXdnelJyZE96c1E1S1d3Q006b3RxakpId2UxSThxQWxKNg=="
 )
 WATSONX_MODEL = os.getenv("WATSONX_MODEL", "meta-llama/llama-3-3-70b-instruct")
 WATSONX_MAX_TOKENS = int(os.getenv("WATSONX_MAX_TOKENS", "2000"))
 
 # Generation settings
-TARGET_COUNT = 50   # Number of hallucination questions to generate
-SAMPLE_SIZE = 10    # Number of base questions to sample from
+TARGET_COUNT = 15000   # Number of hallucination questions to generate
+SAMPLE_SIZE = 382    # Number of base questions to sample from
 DEFAULT_CONTEXT_FILE = '../data/Openbank_extracted_text.txt'
 DEFAULT_BASE_QUESTIONS_FILE = '../data/agentAssistBaseQuestions.parquet'
 # =============================================================================
 
+# ===================== TOKEN MANAGER (from hallucination_detect_MT.py) =====================
+class TokenManager:
+    """
+    Manages WatsonX OAuth tokens with automatic refresh.
+    Thread-safe implementation using Lock for concurrent access.
+    """
+    def __init__(self, watsonx, oauth_url, basic_credentials):
+        self.watsonx = watsonx
+        self.oauth_url = oauth_url
+        self.basic_credentials = basic_credentials
+        self._token = None
+        self._lock = Lock()
+
+    def get_token(self):
+        """Get the current token, refreshing if necessary"""
+        with self._lock:
+            if self._token is None:
+                self._refresh_token_internal()
+            return self._token
+
+    def _refresh_token_internal(self):
+        """Internal method to refresh token (must be called with lock held)"""
+        print("Refreshing WatsonX access token...")
+        self._token = self.watsonx.post_oauth2(
+            self.basic_credentials,
+            self.oauth_url
+        )
+        print("Token refreshed successfully")
+
+    def refresh_token(self):
+        """Force refresh the token"""
+        with self._lock:
+            self._refresh_token_internal()
+
+    def invalidate(self):
+        """Invalidate the current token to force refresh on next get"""
+        with self._lock:
+            self._token = None
+
+
 # Initialize clients based on provider
 anthropic_client = None
+watsonx_client = None
+watsonx_token_manager = None
+
 if LLM_PROVIDER == "anthropic":
     from anthropic import Anthropic
     import httpx
@@ -50,6 +102,10 @@ if LLM_PROVIDER == "anthropic":
     )
     print(f"Using Anthropic API with model: {ANTHROPIC_MODEL}")
 elif LLM_PROVIDER == "watsonx":
+    from watsonx import WatsonX
+    watsonx_client = WatsonX()
+    oauth_url = f"{WATSONX_BASE_URL}/oauth2/accesstoken-clientcredentials"
+    watsonx_token_manager = TokenManager(watsonx_client, oauth_url, WATSONX_BASIC_CREDENTIALS)
     print(f"Using WatsonX with model: {WATSONX_MODEL}")
     print(f"Base URL: {WATSONX_BASE_URL}")
 else:
@@ -86,55 +142,43 @@ def generate_with_llm(prompt: str, provider: str = None, model: str = None, api_
         return response.content[0].text.strip()
 
     elif provider == "watsonx":
-        # WatsonX integration
-        try:
+        # WatsonX integration using global client and token manager
+        global watsonx_client, watsonx_token_manager
+
+        # Initialize client and token manager if not already done
+        if watsonx_client is None:
             from watsonx import WatsonX
-        except ImportError:
-            raise ImportError(
-                "WatsonX module not found. Please ensure the watsonx module is available."
-            )
+            watsonx_client = WatsonX()
+            oauth_url = f"{WATSONX_BASE_URL}/oauth2/accesstoken-clientcredentials"
+            watsonx_token_manager = TokenManager(watsonx_client, oauth_url, WATSONX_BASIC_CREDENTIALS)
 
-        # Get watsonx config
-        if watsonx_config is None:
-            watsonx_config = {
-                'base_url': WATSONX_BASE_URL,
-                'credentials': WATSONX_BASIC_CREDENTIALS,
-                'max_tokens': WATSONX_MAX_TOKENS
-            }
+        # Get max_tokens from config or default
+        max_tokens = WATSONX_MAX_TOKENS
+        if watsonx_config is not None:
+            max_tokens = watsonx_config.get('max_tokens', WATSONX_MAX_TOKENS)
 
-        base_url = watsonx_config.get('base_url', WATSONX_BASE_URL)
-        credentials = watsonx_config.get('credentials', WATSONX_BASIC_CREDENTIALS)
-        max_tokens = watsonx_config.get('max_tokens', WATSONX_MAX_TOKENS)
-        token = watsonx_config.get('token')
-
-        # Initialize WatsonX client if needed
-        watsonx_client = WatsonX()
-
-        # Get or refresh token
-        if token is None:
-            oauth_url = f"{base_url}/oauth2/accesstoken-clientcredentials"
-            token = watsonx_client.post_oauth2(credentials, oauth_url)
+        # Get token from token manager
+        token = watsonx_token_manager.get_token()
 
         # Make API call with retry logic for token expiration
         try:
             generated_text, _, _ = watsonx_client.post_text_generation(
-                base_url,
+                WATSONX_BASE_URL,
                 token,
                 model,
                 prompt,
                 max_tokens
             )
             return generated_text.strip()
-        except Exception as e:
+        except requests.exceptions.HTTPError as e:
             # Check if it's a 401 error (token expired)
-            if hasattr(e, 'response') and hasattr(e.response, 'status_code') and e.response.status_code == 401:
-                # Refresh token and retry
-                oauth_url = f"{base_url}/oauth2/accesstoken-clientcredentials"
-                token = watsonx_client.post_oauth2(credentials, oauth_url)
-                watsonx_config['token'] = token
+            if e.response is not None and e.response.status_code == 401:
+                # Invalidate token and get fresh one
+                watsonx_token_manager.invalidate()
+                token = watsonx_token_manager.get_token()
 
                 generated_text, _, _ = watsonx_client.post_text_generation(
-                    base_url,
+                    WATSONX_BASE_URL,
                     token,
                     model,
                     prompt,
@@ -202,6 +246,7 @@ Use at most three of these techniques per generated question
 
 Return ONLY the questions, one per line, no numbering or extra text."""
 
+    #print(prompt)
     response_text = generate_with_llm(prompt, provider, model, api_key, watsonx_config)
 
     # Extract questions from response
@@ -228,8 +273,8 @@ def generate_hallucination_questions(target_count: int = None, sample_size: int 
                      Defaults to DEFAULT_CONTEXT_FILE.
         base_questions_file: Path to parquet file containing base questions.
                             Defaults to DEFAULT_BASE_QUESTIONS_FILE.
-        num_workers: Number of parallel workers for multiprocessing.
-                    Defaults to cpu_count(). Set to 1 to disable multiprocessing.
+        num_workers: Number of parallel threads.
+                    Defaults to cpu_count(). Set to 1 to disable threading.
 
     Returns:
         Path to the output parquet file containing generated questions
@@ -244,18 +289,18 @@ def generate_hallucination_questions(target_count: int = None, sample_size: int 
     if base_questions_file is None:
         base_questions_file = DEFAULT_BASE_QUESTIONS_FILE
     if num_workers is None:
-        num_workers = cpu_count()
+        num_workers = os.cpu_count() or 4
 
     # Load context from file
-    context_text = ""
-    try:
-        with open(context_file, 'r', encoding='utf-8') as f:
-            context_text = f.read()
-        print(f"Loaded context from: {context_file} ({len(context_text)} characters)")
-    except FileNotFoundError:
-        print(f"Warning: Context file not found at {context_file}. Proceeding without context.")
-    except Exception as e:
-        print(f"Warning: Error reading context file: {e}. Proceeding without context.")
+    # context_text = ""
+    # try:
+    #     with open(context_file, 'r', encoding='utf-8') as f:
+    #         context_text = f.read()
+    #     print(f"Loaded context from: {context_file} ({len(context_text)} characters)")
+    # except FileNotFoundError:
+    #     print(f"Warning: Context file not found at {context_file}. Proceeding without context.")
+    # except Exception as e:
+    #     print(f"Warning: Error reading context file: {e}. Proceeding without context.")
 
     # Load base questions using fastparquet engine
     base_questions_path = Path(base_questions_file)
@@ -286,7 +331,9 @@ def generate_hallucination_questions(target_count: int = None, sample_size: int 
     for i, base_question in enumerate(sampled_questions):
         # Calculate how many questions this base question should generate
         questions_per_base = (target_count // sample_size) + (1 if i < (target_count % sample_size) else 0)
-
+        context_getter = Agent_assist_context(base_question)
+        context_text  = context_getter.get_context()
+        #print(context_text[:10])
         # Get LLM configuration
         provider = LLM_PROVIDER
         if provider == "anthropic":
@@ -301,11 +348,20 @@ def generate_hallucination_questions(target_count: int = None, sample_size: int 
 
         worker_args.append((i, base_question, questions_per_base, context_text, provider, model, api_key, watsonx_config))
 
-    # Process questions in parallel or sequentially
+    # Process questions in parallel or sequentially using ThreadPoolExecutor
     if num_workers > 1:
-        print(f"Processing {len(worker_args)} base questions in parallel...")
-        with Pool(num_workers) as pool:
-            results = pool.map(_process_base_question, worker_args)
+        print(f"Processing {len(worker_args)} base questions in parallel (threads)...")
+        results = []
+        with ThreadPoolExecutor(max_workers=num_workers) as executor:
+            futures = {executor.submit(_process_base_question, arg): arg[0] for arg in worker_args}
+            for future in as_completed(futures):
+                try:
+                    result = future.result()
+                    results.append(result)
+                except Exception as e:
+                    idx = futures[future]
+                    print(f"Error processing base question {idx}: {e}")
+                    results.append((idx, []))
     else:
         print(f"Processing {len(worker_args)} base questions sequentially...")
         results = [_process_base_question(arg) for arg in worker_args]
@@ -355,7 +411,7 @@ if __name__ == "__main__":
     parser.add_argument("--base-questions", "-b", type=str, default=None,
                         help=f"Path to base questions parquet file (default: {DEFAULT_BASE_QUESTIONS_FILE})")
     parser.add_argument("--workers", "-w", type=int, default=None,
-                        help=f"Number of parallel workers (default: {cpu_count()}). Set to 1 to disable multiprocessing")
+                        help=f"Number of parallel threads (default: {os.cpu_count() or 4}). Set to 1 to disable threading")
     parser.add_argument("--provider", "-p", choices=["ollama", "anthropic", "watsonx"], default=None,
                         help="LLM provider to use (default: from config)")
 
@@ -374,6 +430,10 @@ if __name__ == "__main__":
             )
             print(f"Switched to Anthropic API with model: {ANTHROPIC_MODEL}")
         elif LLM_PROVIDER == "watsonx":
+            from watsonx import WatsonX
+            watsonx_client = WatsonX()
+            oauth_url = f"{WATSONX_BASE_URL}/oauth2/accesstoken-clientcredentials"
+            watsonx_token_manager = TokenManager(watsonx_client, oauth_url, WATSONX_BASIC_CREDENTIALS)
             print(f"Switched to WatsonX with model: {WATSONX_MODEL}")
             print(f"Base URL: {WATSONX_BASE_URL}")
 

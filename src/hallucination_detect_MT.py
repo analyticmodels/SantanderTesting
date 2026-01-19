@@ -23,6 +23,10 @@ from datetime import datetime
 import re
 from watsonx import WatsonX
 
+AUTH_TOKEN_CRED = "Yk8xQ3BPeW1NaWVKVm5CSEdla3BDaEFoVjdreTl1dUE6eGpuVnZqTEo1TmRQZGRtYg=="
+TOKEN_URL = "https://apigee-test1.nonprod.corpint.net/oauth2/accesstoken-clientcredentials"
+API_URL = "https://apigee-test1.nonprod.corpint.net/rag/retrieve-generate/idx-vector-openbank-voicebot"
+
 # ===================== CONFIG =====================
 INPUT_FILE = "data/hallucinationQuestions_responses_all.csv"
 OUTPUT_FILE = "data/hallucination_detection_results.csv"
